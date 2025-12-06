@@ -1,0 +1,70 @@
+# =========================
+# Java & Spring Boot 项目
+# =========================
+
+# 编译输出目录
+/target/
+/build/
+/out/
+
+# 依赖缓存（Gradle）
+.gradle/
+/build/
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# IDE 配置文件
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# 环境配置文件（敏感信息）
+*.env
+application-*.yml
+application-*.yaml
+application-*.properties
+
+# 单元测试报告
+/test-output/
+/surefire-reports/
+/jacoco.exec
+
+# 生成的 jar/war/ear 包
+*.jar
+*.war
+*.ear
+
+# 临时上传文件（Spring Boot Multipart）
+/tmp/
+/uploads/
+
+# 数据库文件（如 H2）
+*.db
+*.mv.db
+*.h2.db
+
+# 其他缓存
+.cache/
