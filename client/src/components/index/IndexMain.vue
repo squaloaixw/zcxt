@@ -121,6 +121,7 @@ export default {
   margin-bottom: 10px;
 }
 
+
 /* 路由视图样式 */
 .router-view {
   padding: 0 20px 20px 20px;
