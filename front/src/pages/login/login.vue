@@ -101,7 +101,7 @@ export default {
 			]
 			var colors = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
 			var sizes = ['14', '15', '16', '17', '18']
-			
+
 			var output = []
 			for (var i = 0; i < len; i++) {
 			  // 随机验证码
@@ -174,13 +174,13 @@ export default {
 	.container {
 		position: relative;
 		background: url(http://codegen.caihongy.cn/20221029/e35b6d97fed04bd2a3e7b21cbb5114db.jpg) no-repeat;
-		
+
 		.el-form-item {
 		  & /deep/ .el-form-item__content {
 		    width: 100%;
 		  }
 		}
-		
+
 		.list-item /deep/ .el-input .el-input__inner {
 			border: 1px solid #999;
 			border-radius: 8px;
@@ -192,7 +192,7 @@ export default {
 			font-size: 14px;
 			height: 44px;
 		}
-		
+
 		.list-code /deep/ .el-input .el-input__inner {
 			border: 1px solid #999;
 			border-radius: 8px;
@@ -207,7 +207,7 @@ export default {
 			font-size: 14px;
 			height: 44px;
 		}
-		
+
 		.list-type /deep/ .el-radio__input .el-radio__inner {
 			background: rgba(53, 53, 53, 0);
 			border-color: #666666;
