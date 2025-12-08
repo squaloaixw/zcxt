@@ -1,682 +1,532 @@
 <template>
-<div>
-	<div :style='{"padding":"12px","boxShadow":"0 0px 6px #999","margin":"0px auto","borderColor":"#fff","borderRadius":"0px","background":"linear-gradient(180deg, #eee 0%, #fff 32%, #eee 100%)","borderWidth":"1px 0 1px 0","width":"100%","borderStyle":"solid"}' class="breadcrumb-preview">
-		<el-breadcrumb :separator="'Ξ'" :style='{"width":"1200px","margin":"0 auto","fontSize":"14px","lineHeight":"1"}'>
-			<el-breadcrumb-item>首页</el-breadcrumb-item>
-			<el-breadcrumb-item v-for="(item, index) in breadcrumbItem" :key="index">{{item.name}}</el-breadcrumb-item>
-		</el-breadcrumb>
-	</div>
-	
-	<div class="detail-preview" :style='{"width":"1200px","padding":"0 0 24px","margin":"0px auto","position":"relative"}'>
-		<div class="attr" :style='{"border":"1px solid #dfdfdf","padding":"16px 16px 20px 16px","boxShadow":"1px 2px 3px #eee","margin":"20px 0 20px 0","overflow":"hidden","borderRadius":"16px","background":"#fff","position":"relative"}'>
-			<el-carousel :style='{"width":"540px","margin":"0 0px 0 0","float":"right","height":"400px"}' trigger="click" indicator-position="inside" arrow="always" type="default" direction="horizontal" height="400px" autoplay="true" interval="3000" loop="true">
-				<el-carousel-item :style='{"borderRadius":"10px","width":"100%","height":"100%"}' v-for="item in detailBanner" :key="item.id">
-					<el-image :style='{"objectFit":"cover","width":"100%","height":"100%"}' v-if="item.substr(0,4)=='http'" :src="item" fit="cover" class="image"></el-image>
-					<el-image :style='{"objectFit":"cover","width":"100%","height":"100%"}' v-else :src="baseUrl + item" fit="cover" class="image"></el-image>
-				</el-carousel-item>
-			</el-carousel>
-	
-			
-			<div class="info" :style='{"minHeight":"520px","width":"600px","padding":"0px 0 20px","margin":"0px","float":"left","background":"#fff"}'>
-				<div class="item" :style='{"border":"0px solid #eee","padding":"10px 10px","boxShadow":"1px 2px 6px #8dd2eb","margin":"0 0 10px 0","alignItems":"center","borderRadius":"8px","background":"radial-gradient(circle, rgba(55,170,250,1) 25%, rgba(63,94,251,1) 100%),rgb(63,201,251)","display":"flex","justifyContent":"space-between"}'>
-					<div :style='{"color":"#fff","fontSize":"16px"}'>
-                    {{detail.biaoti}}
-                    </div>
-					<div @click="storeup(1)" v-show="!isStoreup" :style='{"cursor":"pointer","padding":"0","borderRadius":"30%","background":"none"}'><i v-if="true" :style='{"color":"#ffb966","fontSize":"14px"}' class="el-icon-star-off"></i><span :style='{"color":"#ffb966","fontSize":"14px"}'>点我收藏</span></div>
-					<div @click="storeup(-1)" v-show="isStoreup" :style='{"cursor":"pointer","padding":"0","borderRadius":"30%","background":"none"}'><i v-if="true" :style='{"color":"#ffb966","fontSize":"14px"}' class="el-icon-star-on"></i><span :style='{"color":"#ffb966","fontSize":"14px"}'>取消收藏</span></div>
-				</div>
+  <div class="detail-container">
+    <div class="breadcrumb-box">
+      <el-breadcrumb separator-class="el-icon-arrow-right">
+        <el-breadcrumb-item :to="{ path: '/index' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item>汽车资讯</el-breadcrumb-item>
+        <el-breadcrumb-item>详情</el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
 
-				<div class="item" :style='{"border":"1px solid #dfdfdf","padding":"0px 10px","boxShadow":"1px 2px 3px #eee","margin":"0 0 8px 0","borderRadius":"8px","background":"radial-gradient(circle, rgba(246,246,246,1) 0%, rgba(230,230,230,1) 100%)","display":"flex","justifyContent":"spaceBetween"}'>
-					<div class="lable" :style='{"width":"120px","padding":"0 10px","fontSize":"14px","lineHeight":"40px","color":"#666","textAlign":"right"}'>简介</div>
-					<div  :style='{"width":"498px","padding":"8px 10px 0","fontSize":"14px","lineHeight":"24px","color":"#999","height":"auto"}'>{{detail.jianjie}}</div>
-				</div>
-				<div class="item" :style='{"border":"1px solid #dfdfdf","padding":"0px 10px","boxShadow":"1px 2px 3px #eee","margin":"0 0 8px 0","borderRadius":"8px","background":"radial-gradient(circle, rgba(246,246,246,1) 0%, rgba(230,230,230,1) 100%)","display":"flex","justifyContent":"spaceBetween"}'>
-					<div class="lable" :style='{"width":"120px","padding":"0 10px","fontSize":"14px","lineHeight":"40px","color":"#666","textAlign":"right"}'>发布时间</div>
-					<div  :style='{"width":"498px","padding":"8px 10px 0","fontSize":"14px","lineHeight":"24px","color":"#999","height":"auto"}'>{{detail.fabushijian}}</div>
-				</div>
-				<div class="item" :style='{"border":"1px solid #dfdfdf","padding":"0px 10px","boxShadow":"1px 2px 3px #eee","margin":"0 0 8px 0","borderRadius":"8px","background":"radial-gradient(circle, rgba(246,246,246,1) 0%, rgba(230,230,230,1) 100%)","display":"flex","justifyContent":"spaceBetween"}'>
-					<div class="lable" :style='{"width":"120px","padding":"0 10px","fontSize":"14px","lineHeight":"40px","color":"#666","textAlign":"right"}'>发布人</div>
-					<div  :style='{"width":"498px","padding":"8px 10px 0","fontSize":"14px","lineHeight":"24px","color":"#999","height":"auto"}'>{{detail.faburen}}</div>
-				</div>
-				<div class="item" :style='{"border":"1px solid #dfdfdf","padding":"0px 10px","boxShadow":"1px 2px 3px #eee","margin":"0 0 8px 0","borderRadius":"8px","background":"radial-gradient(circle, rgba(246,246,246,1) 0%, rgba(230,230,230,1) 100%)","display":"flex","justifyContent":"spaceBetween"}'>
-					<div class="lable" :style='{"width":"120px","padding":"0 10px","fontSize":"14px","lineHeight":"40px","color":"#666","textAlign":"right"}'>点击次数</div>
-					<div  :style='{"width":"498px","padding":"8px 10px 0","fontSize":"14px","lineHeight":"24px","color":"#999","height":"auto"}'>{{detail.clicknum}}</div>
-				</div>
-				<div class="btn" :style='{"padding":"10px 0","flexWrap":"wrap","display":"flex"}'>
-				</div>
-			</div>
-			
-			<!-- 热门信息 -->
-			<div class="hot" :style='{"width":"100%","clear":"both","margin":"20px 0 0 0","borderRadius":"8px 8px 0 0","background":"#fff","height":"auto"}'>
-			  <div :style='{"padding":"0 20px","color":"#fff","borderRadius":"8px 8px 0 0","textAlign":"center","background":"radial-gradient(circle, rgba(63,201,251,1) 50%, rgba(63,94,251,1) 100%),rgb(63,201,251)","width":"100%","lineHeight":"44px","fontSize":"14px"}'>热门信息</div>
-			  <div :style='{"border":"1px solid #dfdfdf","padding":"20px","boxShadow":"1px 2px 3px #eee,inset 0px 16px 16px 0px #eee","borderRadius":"0 0 8px 8px","background":"#fff","display":"flex","width":"100%","justifyContent":"space-between","height":"auto"}'>
-			    <div v-for="item in hotList" :key="item" :style='{"width":"23%","background":"#fff","height":"auto"}' @click="toDetail(item)">
-			      <img :style='{"cursor":"pointer","width":"100%","objectFit":"cover","borderRadius":"8px","display":"block","height":"150px"}' :src="baseUrl + (item.fengmian?item.fengmian.split(',')[0]:'')" alt="">
-			      <div :style='{"padding":"4px 5px 0","lineHeight":"32px","fontSize":"14px","color":"#666"}'>{{item.biaoti}}</div>
-			      <div :style='{"padding":"4px 5px 0","lineHeight":"32px","fontSize":"14px","color":"#666"}'>{{item.faburen}}</div>
-			      <!-- <div :style='{"padding":"0 5px","lineHeight":"12px","fontSize":"12px","color":"#999","textAlign":"right"}'>2022-02-02</div> -->
-			    </div>
-			  </div>
-			</div>
-		</div>
-		
-		
-		<el-tabs class="detail" :style='{"border":"1px solid #dfdfdf","minHeight":"350px","boxShadow":"1px 2px 3px #eee","padding":"16px","borderRadius":"16px","background":"#FFF"}' v-model="activeName" type="border-card">
-			<el-tab-pane label="内容" name="first">
-				<div v-html="detail.neirong"></div>
-			</el-tab-pane>
-		</el-tabs>
-	</div>
-</div>
+    <div class="main-content" v-if="detail.id">
+      <div class="top-section">
+        <div class="carousel-box">
+          <el-carousel trigger="click" height="400px" indicator-position="outside">
+            <el-carousel-item v-for="(item, index) in detailBanner" :key="index">
+              <div class="image-wrapper">
+                <el-image
+                    style="width: 100%; height: 100%"
+                    :src="item.substr(0,4)=='http' ? item : baseUrl + item"
+                    fit="cover"
+                    class="carousel-image">
+                </el-image>
+              </div>
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+
+        <div class="info-box">
+          <h1 class="title">{{ detail.biaoti }}</h1>
+
+          <div class="meta-row">
+            <span class="meta-item"><i class="el-icon-time"></i> {{ detail.fabushijian }}</span>
+            <span class="meta-item"><i class="el-icon-user"></i> {{ detail.faburen }}</span>
+            <span class="meta-item"><i class="el-icon-view"></i> {{ detail.clicknum }}次浏览</span>
+          </div>
+
+          <div class="intro-box">
+            <div class="label">简介：</div>
+            <div class="content">{{ detail.jianjie }}</div>
+          </div>
+
+          <div class="actions">
+            <div class="store-btn" @click="storeup(1)" v-if="!isStoreup">
+              <i class="el-icon-star-off"></i> 收藏资讯
+            </div>
+            <div class="store-btn active" @click="storeup(-1)" v-else>
+              <i class="el-icon-star-on"></i> 已收藏
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <el-tabs v-model="activeName" type="border-card">
+          <el-tab-pane label="详细内容" name="first">
+            <div class="rich-text" v-html="detail.neirong"></div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+
+      <div class="hot-section">
+        <div class="section-header">
+          <span>热门推荐</span>
+        </div>
+        <div class="hot-list">
+          <div
+              class="hot-item"
+              v-for="item in hotList"
+              :key="item.id"
+              @click="toDetail(item)"
+          >
+            <div class="img-box">
+              <el-image
+                  v-if="item.fengmian"
+                  style="width: 100%; height: 100%"
+                  :src="baseUrl + item.fengmian.split(',')[0]"
+                  fit="cover">
+              </el-image>
+            </div>
+            <div class="info">
+              <div class="hot-title">{{ item.biaoti }}</div>
+              <div class="hot-meta">{{ item.faburen }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="loading-state">
+      <i class="el-icon-loading"></i> 正在加载详情...
+    </div>
+  </div>
 </template>
 
 <script>
-  import CountDown from '@/components/CountDown';
-  export default {
-    //数据集合
-    data() {
-      return {
+import CountDown from '@/components/CountDown';
+
+export default {
+  //数据集合
+  data() {
+    return {
+      tablename: 'qichezixun',
+      baseUrl: '',
+      breadcrumbItem: [
+        {
+          name: '详情信息'
+        }
+      ],
+      title: '',
+      detailBanner: [],
+      endTime: 0,
+      hotList: [],
+      detail: {},
+      activeName: 'first',
+      total: 1,
+      pageSize: 5,
+      pageSizes: [10, 20, 30, 50],
+      totalPage: 1,
+      rules: {
+        content: [
+          { required: true, message: '请输入内容', trigger: 'blur' }
+        ]
+      },
+      storeupParams: {
+        name: '',
+        picture: '',
+        refid: 0,
         tablename: 'qichezixun',
-        baseUrl: '',
-        breadcrumbItem: [
-          {
-            name: '详情信息'
-          }
-        ],
-        title: '',
-        detailBanner: [],
-        endTime: 0,
-        hotList: [],
-        detail: {},
-        activeName: 'first',
-        total: 1,
-        pageSize: 5,
-		pageSizes: [10,20,30,50],
-        totalPage: 1,
-        rules: {
-          content: [
-            { required: true, message: '请输入内容', trigger: 'blur' }
-          ]
-        },
-        storeupParams: {
-          name: '',
-          picture: '',
-          refid: 0,
-          tablename: 'qichezixun',
-          userid: localStorage.getItem('userid')
-        },
-        isStoreup: false,
-        storeupInfo: {},
-        buynumber: 1,
+        userid: localStorage.getItem('userid')
+      },
+      isStoreup: false,
+      storeupInfo: {},
+      buynumber: 1,
+    }
+  },
+  created() {
+    this.init();
+  },
+  //方法集合
+  methods: {
+    init() {
+      this.baseUrl = this.$config.baseUrl;
+
+      // --- 核心修复：兼容多种参数传递方式 ---
+      // 1. 如果 URL 中直接包含 id 参数 (如 ?id=81)
+      if(this.$route.query.id) {
+        this.detail.id = this.$route.query.id;
       }
-    },
-    created() {
-        this.init();
-    },
-    //方法集合
-    methods: {
-        init() {
-          this.baseUrl = this.$config.baseUrl;
-          if(this.$route.query.detailObj) {
-            this.detail = JSON.parse(this.$route.query.detailObj);
-          }
-          if(this.$route.query.storeupObj) {
-            this.detail.id = JSON.parse(this.$route.query.storeupObj).refid;
-          }
-          this.$http.get(this.tablename + '/detail/'  + this.detail.id, {}).then(res => {
-            if (res.data.code == 0) {
-              this.detail = res.data.data;
-              this.title = this.detail.biaoti;
-              this.detailBanner = this.detail.fengmian ? this.detail.fengmian.split(",") : [];
-              this.$forceUpdate();
-            }
-          });
+      // 2. 如果 URL 包含 detailObj 对象字符串
+      if (this.$route.query.detailObj) {
+        this.detail = JSON.parse(this.$route.query.detailObj);
+      }
+      // 3. 如果从收藏页跳转过来
+      if (this.$route.query.storeupObj) {
+        this.detail.id = JSON.parse(this.$route.query.storeupObj).refid;
+      }
 
-          this.getStoreupStatus();
-          this.getHotList();
+      // --- 确保获取到 ID 后再发起请求，避免 undefined 错误 ---
+      if (this.detail.id) {
+        this.$http.get(this.tablename + '/detail/' + this.detail.id, {}).then(res => {
+          if (res.data.code == 0) {
+            this.detail = res.data.data;
+            this.title = this.detail.biaoti;
+            this.detailBanner = this.detail.fengmian ? this.detail.fengmian.split(",") : [];
+            this.$forceUpdate();
+          }
+        });
+        // 获取收藏状态
+        this.getStoreupStatus();
+      } else {
+        console.warn("未获取到有效的 detail ID，无法请求数据");
+      }
 
-        },
-        toDetail(item) {
-          this.$router.push({path: '/index/qichezixunDetail', query: {detailObj: JSON.stringify(item)}});
-          this.init();
-          document.body.scrollTop = 0
-          document.documentElement.scrollTop = 0
-        },
-        getHotList() {
-          let autoSortUrl = "";
-          autoSortUrl = "qichezixun/autoSort";
-            this.$http.get(autoSortUrl, {params: {
-                page: 1,
-                limit: 4,
-            }}).then(res => {
-                if (res.data.code == 0) {
-                    this.hotList = res.data.data.list;        
-                }
-            })
-        },
-      storeup(type) {
-        if (type == 1 && !this.isStoreup) {
-          this.storeupParams.name = this.title;
-          this.storeupParams.picture = this.detailBanner[0];
-          this.storeupParams.refid = this.detail.id;
-          this.storeupParams.type = type;
-          this.$http.post('storeup/add', this.storeupParams).then(res => {
-            if (res.data.code == 0) {
-              this.isStoreup = true;
-              this.$message({
-                type: 'success',
-                message: '收藏成功!',
-                duration: 1500,
-              });
-            }
-          });
+      // 获取热门列表（不需要 ID）
+      this.getHotList();
+    },
+    toDetail(item) {
+      // 统一跳转逻辑，传递 detailObj
+      this.$router.push({ path: '/index/qichezixunDetail', query: { detailObj: JSON.stringify(item) } });
+      // 强制重新加载数据，因为是同路由跳转
+      this.detail = item;
+      this.init();
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+    },
+    getHotList() {
+      let autoSortUrl = "qichezixun/autoSort";
+      this.$http.get(autoSortUrl, {
+        params: {
+          page: 1,
+          limit: 4,
         }
-        if (type == -1 && this.isStoreup) {
-          let delIds = new Array();
-          delIds.push(this.storeupInfo.id);
-          this.$http.post('storeup/delete', delIds).then(res => {
-            if (res.data.code == 0) {
-              this.isStoreup = false;
-              this.$message({
-                type: 'success',
-                message: '取消成功!',
-                duration: 1500,
-              });
-            }
-          });
+      }).then(res => {
+        if (res.data.code == 0) {
+          this.hotList = res.data.data.list;
         }
-      },
-      getStoreupStatus(){
-        if(localStorage.getItem("Token")) {
-            this.$http.get('storeup/list', {params: {page: 1, limit: 1, type: 1, refid: this.detail.id, tablename: 'qichezixun', userid: localStorage.getItem('userid')}}).then(res => {
-              if (res.data.code == 0 && res.data.data.list.length > 0) {
-                this.isStoreup = true;
-                this.storeupInfo = res.data.data.list[0];
-              }
-            });
-        }
-      },
-      curChange(page) {
-        this.getDiscussList(page);
-      },
-      prevClick(page) {
-        this.getDiscussList(page);
-      },
-      nextClick(page) {
-        this.getDiscussList(page);
-      },
-      // 下载
-      download(file){
-        if(!file) {
+      })
+    },
+    storeup(type) {
+      // 1. 校验数据完整性
+      if (!this.detail.id) {
+        this.$message.error('数据加载异常，无法操作');
+        return;
+      }
+
+      // 2. 核心修复：检查登录状态
+      // 必须实时获取 userid，不能依赖 data() 中初始化的值（因为可能是 null）
+      let userid = localStorage.getItem('userid');
+      if (!userid) {
+        this.$message.error('请先登录');
+        // 可选：自动跳转到登录页
+        // this.$router.push('/login');
+        return;
+      }
+
+      // 3. 准备请求参数
+      // 确保所有字段都有值，防止后端报空指针错误
+      this.storeupParams.userid = userid;
+      this.storeupParams.name = this.title;
+      // 安全获取图片，如果没有则传空字符串
+      this.storeupParams.picture = (this.detailBanner && this.detailBanner.length > 0) ? this.detailBanner[0] : '';
+      this.storeupParams.refid = this.detail.id;
+      this.storeupParams.type = type; // type=1 表示收藏
+
+      // 4. 执行收藏逻辑
+      if (type == 1 && !this.isStoreup) {
+        this.$http.post('storeup/add', this.storeupParams).then(res => {
+          if (res.data.code == 0) {
+            this.isStoreup = true;
+            // 收藏成功后，重新获取一下收藏信息，以便获取 storeupInfo.id 用于取消收藏
+            this.getStoreupStatus();
             this.$message({
-              type: 'error',
-              message: '文件不存在',
+              type: 'success',
+              message: '收藏成功!',
               duration: 1500,
             });
-            return;
+          }
+        });
+      }
+
+      // 5. 执行取消收藏逻辑
+      if (type == -1 && this.isStoreup) {
+        if (!this.storeupInfo || !this.storeupInfo.id) {
+          this.$message.error('取消失败，无法获取收藏记录ID');
+          return;
         }
-        window.open(this.baseUrl+file)
-      },
-
-
+        let delIds = new Array();
+        delIds.push(this.storeupInfo.id);
+        this.$http.post('storeup/delete', delIds).then(res => {
+          if (res.data.code == 0) {
+            this.isStoreup = false;
+            this.storeupInfo = {}; // 清空信息
+            this.$message({
+              type: 'success',
+              message: '取消成功!',
+              duration: 1500,
+            });
+          }
+        });
+      }
     },
-    components: {
-      CountDown
-    }
+    getStoreupStatus() {
+      if (localStorage.getItem("Token")) {
+        this.$http.get('storeup/list', { params: { page: 1, limit: 1, type: 1, refid: this.detail.id, tablename: 'qichezixun', userid: localStorage.getItem('userid') } }).then(res => {
+          if (res.data.code == 0 && res.data.data.list.length > 0) {
+            this.isStoreup = true;
+            this.storeupInfo = res.data.data.list[0];
+          }
+        });
+      }
+    },
+    download(file) {
+      if (!file) {
+        this.$message({
+          type: 'error',
+          message: '文件不存在',
+          duration: 1500,
+        });
+        return;
+      }
+      window.open(this.baseUrl + file)
+    },
+  },
+  components: {
+    CountDown
   }
+}
 </script>
 
-<style rel="stylesheet/scss" lang="scss" scoped>
-	.detail-preview {
-	
-	  .attr {
-	    .el-carousel /deep/ .el-carousel__indicator button {
-	      width: 0;
-	      height: 0;
-	      display: none;
-	    }
-	
-	    .el-input-number__decrease:hover:not(.is-disabled)~.el-input .el-input__inner:not(.is-disabled), .el-input-number__increase:hover:not(.is-disabled)~.el-input .el-input__inner:not(.is-disabled) {
-	      border-color: none;
-	    }
-	  }
-	
-	  .detail {
-	    & /deep/ .el-tabs__header .el-tabs__nav-wrap {
-	      margin-bottom: 0;
-	    }
-	
-	    & .add .el-textarea {
-	      width: auto;
-	    }
-	  }
-	}
-	
-	.attr .el-carousel /deep/ .el-carousel__container .el-carousel__arrow--left {
-		width: 36px;
-		font-size: 12px;
-		height: 36px;
-	}
-	
-	.attr .el-carousel /deep/ .el-carousel__container .el-carousel__arrow--left:hover {
-		background: #278bd5;
-	}
-	
-	.attr .el-carousel /deep/ .el-carousel__container .el-carousel__arrow--right {
-		width: 36px;
-		font-size: 12px;
-		height: 36px;
-	}
-	
-	.attr .el-carousel /deep/ .el-carousel__container .el-carousel__arrow--right:hover {
-		background: #278bd5;
-	}
-
-	.attr .el-carousel /deep/ .el-carousel__indicators {
-		padding: 0;
-		margin: 0 0 8px 0;
-		z-index: 2;
-		position: absolute;
-		list-style: none;
-	}
-	
-	.attr .el-carousel /deep/ .el-carousel__indicators li {
-		border-radius: 50%;
-		padding: 0;
-		margin: 0 4px;
-		background: #fff;
-		display: inline-block;
-		width: 12px;
-		opacity: 0.4;
-		transition: 0.3s;
-		height: 12px;
-	}
-	
-	.attr .el-carousel /deep/ .el-carousel__indicators li:hover {
-		border-radius: 50%;
-		padding: 0;
-		margin: 0 4px;
-		background: #fff;
-		display: inline-block;
-		width: 12px;
-		opacity: 0.7;
-		height: 12px;
-	}
-	
-	.attr .el-carousel /deep/ .el-carousel__indicators li.is-active {
-		border-radius: 50%;
-		padding: 0;
-		margin: 0 4px;
-		background: #fff;
-		display: inline-block;
-		width: 12px;
-		opacity: 1;
-		height: 12px;
-	}
-	
-	.attr .el-input-number /deep/ .el-input-number__decrease {
-		cursor: pointer;
-		z-index: 1;
-		display: flex;
-		border-color: #DCDFE6;
-		border-radius: 4px 0 0 4px;
-		top: 1px;
-		left: 1px;
-		background: #f5f5f5;
-		width: 40px;
-		justify-content: center;
-		border-width: 0 1px 0 0;
-		align-items: center;
-		position: absolute;
-		border-style: solid;
-		text-align: center;
-		height: 38px;
-	}
-	
-	.attr .el-input-number /deep/ .el-input-number__decrease i {
-		color: #666;
-		font-size: 14px;
-	}
-
-	.attr .el-input-number /deep/ .el-input-number__increase {
-		cursor: pointer;
-		z-index: 1;
-		display: flex;
-		border-color: #DCDFE6;
-		right: 1px;
-		border-radius: 0 4px 4px 0;
-		top: 1px;
-		background: #f5f5f5;
-		width: 40px;
-		justify-content: center;
-		border-width: 0 0 0 1px;
-		align-items: center;
-		position: absolute;
-		border-style: solid;
-		text-align: center;
-		height: 38px;
-	}
-	
-	.attr .el-input-number /deep/ .el-input-number__increase i {
-		color: #666;
-		font-size: 14px;
-	}
-	
-	.attr .el-input-number /deep/ .el-input .el-input__inner {
-		border: 1px solid #DCDFE6;
-		border-radius: 4px;
-		padding: 0 40px;
-		outline: none;
-		color: #666;
-		background: #FFF;
-		display: inline-block;
-		width: 100%;
-		font-size: 14px;
-		line-height: 40px;
-		text-align: center;
-		height: 40px;
-	}
-	
-	.detail-preview .detail.el-tabs /deep/ .el-tabs__header {
-		border-radius: 8px;
-		padding: 4px 6px;
-		margin: 0;
-		background: radial-gradient(circle, rgba(63,201,251,1) 50%, rgba(63,94,251,1) 100%),rgb(63,201,251);
-		border-color: #E4E7ED;
-		border-width: 0 0 0px 0;
-		border-style: solid;
-	}
-	
-	.detail-preview .detail.el-tabs /deep/ .el-tabs__header .el-tabs__item {
-		border: 0;
-		padding: 0 16px;
-		margin: 0 4px 0 4px;
-		color: #fff;
-		font-weight: 500;
-		display: inline-block;
-		font-size: 14px;
-		line-height: 32px;
-		border-radius: 50%;
-		background: transparent;
-		position: relative;
-		list-style: none;
-		height: 32px;
-	}
-	
-	.detail-preview .detail.el-tabs /deep/ .el-tabs__header .el-tabs__item:hover {
-		border: 0;
-		border-radius: 50%;
-		padding: 0 16px;
-		margin: 0 4px 0 4px;
-		color: #409EFF;
-		background: #f3f9fe;
-		line-height: 32px;
-		height: 32px;
-	}
-	
-	.detail-preview .detail.el-tabs /deep/ .el-tabs__header .el-tabs__item.is-active {
-		border: 0;
-		border-radius: 50%;
-		padding: 0 16px;
-		margin: 0 4px 0 4px;
-		color: #409EFF;
-		background: #f3f9fe;
-		line-height: 32px;
-		height: 32px;
-	}
-	
-	.detail-preview .detail.el-tabs /deep/ .el-tabs__content {
-		padding: 15px;
-	}
-	
-	.detail-preview .detail.el-tabs .add /deep/ .el-form-item__label {
-		padding: 0 10px 0 0;
-		color: #666;
-		width: 80px;
-		font-size: 14px;
-		line-height: 40px;
-		text-align: right;
-	}
-	
-	.detail-preview .detail.el-tabs .add /deep/ .el-textarea__inner {
-		border: 0;
-		border-radius: 4px;
-		padding: 4px 12px;
-		box-shadow: 0 0 0px rgba(64, 158, 255, .5);
-		outline: none;
-		color: #333;
-		background: none;
-		width: 1058px;
-		font-size: 14px;
-		min-height: 200px;
-		line-height: 32px;
-		height: 200px;
-	}
-	
-	.breadcrumb-preview .el-breadcrumb /deep/ .el-breadcrumb__separator {
-		margin: 0 9px;
-		color: #ccc;
-		font-weight: 500;
-	}
-	
-	.breadcrumb-preview .el-breadcrumb /deep/ .el-breadcrumb__inner a {
-		color: #333;
-		display: inline-block;
-	}
-
-	.breadcrumb-preview .el-breadcrumb /deep/ .el-breadcrumb__inner {
-		color: #999;
-		display: inline-block;
-	}
-	
-	.el-pagination /deep/ .el-pagination__total {
-		margin: 0 10px 0 0;
-		color: #666;
-		font-weight: 400;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .btn-prev {
-		border: none;
-		border-radius: 2px;
-		padding: 0;
-		margin: 0 5px;
-		color: #666;
-		background: #f4f4f5;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		min-width: 35px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .btn-next {
-		border: none;
-		border-radius: 2px;
-		padding: 0;
-		margin: 0 5px;
-		color: #666;
-		background: #f4f4f5;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		min-width: 35px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .btn-prev:disabled {
-		border: none;
-		cursor: not-allowed;
-		border-radius: 2px;
-		padding: 0;
-		margin: 0 5px;
-		color: #C0C4CC;
-		background: #f4f4f5;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .btn-next:disabled {
-		border: none;
-		cursor: not-allowed;
-		border-radius: 2px;
-		padding: 0;
-		margin: 0 5px;
-		color: #C0C4CC;
-		background: #f4f4f5;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .el-pager {
-		padding: 0;
-		margin: 0;
-		display: inline-block;
-		vertical-align: top;
-	}
-	
-	.el-pagination /deep/ .el-pager .number {
-		cursor: pointer;
-		padding: 0 4px;
-		margin: 0 5px;
-		color: #666;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		border-radius: 2px;
-		background: #f4f4f5;
-		text-align: center;
-		min-width: 30px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .el-pager .number:hover {
-		cursor: pointer;
-		padding: 0 4px;
-		margin: 0 5px;
-		color: #409EFF;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		border-radius: 2px;
-		background: #f4f4f5;
-		text-align: center;
-		min-width: 30px;
-		height: 28px;
+<style lang="scss" scoped>
+.detail-container {
+  width: 100%;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  padding-bottom: 40px;
 }
 
-.el-pagination /deep/ .el-pager .number.active {
-		cursor: default;
-		padding: 0 4px;
-		margin: 0 5px;
-		color: #FFF;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		border-radius: 2px;
-		background: #409EFF;
-		text-align: center;
-		min-width: 30px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .el-pagination__sizes {
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .el-pagination__sizes .el-input {
-		margin: 0 5px;
-		width: 100px;
-		position: relative;
-	}
-	
-	.el-pagination /deep/ .el-pagination__sizes .el-input .el-input__inner {
-		border: 1px solid #DCDFE6;
-		cursor: pointer;
-		padding: 0 25px 0 8px;
-		color: #606266;
-		display: inline-block;
-		font-size: 13px;
-		line-height: 28px;
-		border-radius: 3px;
-		outline: 0;
-		background: #FFF;
-		width: 100%;
-		text-align: center;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .el-pagination__sizes .el-input span.el-input__suffix {
-		top: 0;
-		position: absolute;
-		right: 0;
-		height: 100%;
-	}
-	
-	.el-pagination /deep/ .el-pagination__sizes .el-input .el-input__suffix .el-select__caret {
-		cursor: pointer;
-		color: #C0C4CC;
-		width: 25px;
-		font-size: 14px;
-		line-height: 28px;
-		text-align: center;
-	}
+.loading-state {
+  padding: 50px;
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+}
 
-	.el-pagination /deep/ .el-pagination__jump {
-		margin: 0 0 0 24px;
-		color: #606266;
-		display: inline-block;
-		vertical-align: top;
-		font-size: 13px;
-		line-height: 28px;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .el-pagination__jump .el-input {
-		border-radius: 3px;
-		padding: 0 2px;
-		margin: 0 2px;
-		display: inline-block;
-		width: 50px;
-		font-size: 14px;
-		line-height: 18px;
-		position: relative;
-		text-align: center;
-		height: 28px;
-	}
-	
-	.el-pagination /deep/ .el-pagination__jump .el-input .el-input__inner {
-		border: 1px solid #DCDFE6;
-		cursor: pointer;
-		padding: 0 3px;
-		color: #606266;
-		display: inline-block;
-		font-size: 14px;
-		line-height: 28px;
-		border-radius: 3px;
-		outline: 0;
-		background: #FFF;
-		width: 100%;
-		text-align: center;
-		height: 28px;
-	}
+.breadcrumb-box {
+  width: 1200px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.main-content {
+  width: 1200px;
+  margin: 0 auto;
+}
+
+/* 顶部区域 */
+.top-section {
+  display: flex;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  gap: 30px;
+}
+
+.carousel-box {
+  width: 50%;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+
+  /* 修复 el-carousel 内部可能的圆角溢出 */
+  /deep/ .el-carousel__item {
+    border-radius: 8px;
+  }
+}
+
+.image-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.info-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  .title {
+    font-size: 24px;
+    color: #333;
+    margin: 0 0 15px 0;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 20px;
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 20px;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+  }
+
+  .intro-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #409EFF;
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #666;
+    }
+
+    .content {
+      color: #666;
+      line-height: 1.6;
+      font-size: 14px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+  }
+
+  .actions {
+    margin-top: auto;
+    display: flex;
+    gap: 15px;
+
+    .store-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 25px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      border: 1px solid #dcdfe6;
+      color: #606266;
+      background: #fff;
+
+      &:hover {
+        border-color: #409EFF;
+        color: #409EFF;
+      }
+
+      &.active {
+        background: #fff;
+        border-color: #ffba00;
+        color: #ffba00;
+      }
+
+      i {
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+/* 内容区域 */
+.content-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  overflow: hidden;
+
+  /* 使用 /deep/ 替代 ::v-deep 以获得更好兼容性 */
+  /deep/ .el-tabs--border-card {
+    border: none;
+    box-shadow: none;
+  }
+
+  /deep/ .el-tabs__header {
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+  }
+
+  /deep/ .el-tabs__item.is-active {
+    color: #409EFF;
+    font-weight: bold;
+    border-top: 2px solid #409EFF; /* 增加选中态的顶部高亮 */
+  }
+
+  .rich-text {
+    padding: 20px;
+    min-height: 300px;
+    line-height: 1.8;
+    color: #333;
+
+    /deep/ img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 10px auto;
+    }
+  }
+}
+
+/* 热门推荐 */
+.hot-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+
+  .section-header {
+    border-left: 4px solid #409EFF;
+    padding-left: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .hot-list {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .hot-item {
+    flex: 1;
+    cursor: pointer;
+    transition: transform 0.3s;
+    background: #fff;
+
+    &:hover {
+      transform: translateY(-5px);
+
+      .hot-title {
+        color: #409EFF;
+      }
+    }
+
+    .img-box {
+      width: 100%;
+      height: 160px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      background: #eee;
+    }
+
+    .info {
+      .hot-title {
+        font-size: 15px;
+        color: #333;
+        margin-bottom: 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+      }
+
+      .hot-meta {
+        font-size: 12px;
+        color: #999;
+      }
+    }
+  }
+}
 </style>

@@ -1,228 +1,313 @@
 <template>
-<div>
-	<div class="container" :style='{"minHeight":"100vh","alignItems":"center","background":"url(http://codegen.caihongy.cn/20221029/e35b6d97fed04bd2a3e7b21cbb5114db.jpg) no-repeat","display":"flex","width":"100%","backgroundSize":"cover","backgroundPosition":"center center","backgroundRepeat":"no-repeat","justifyContent":"center"}'>
-		<el-form ref="loginForm" :model="loginForm" :style='{"padding":"35px 20px 30px","boxShadow":"0 1px 3px rgba(64, 158, 255, .8)","margin":"0","borderRadius":"32px 32px","background":"url(http://codegen.caihongy.cn/20221029/ea2be95667c4485286b36febaa97a64e.png) no-repeat center top,url(http://codegen.caihongy.cn/20221029/238e5e194bc348e9b292b2ffaed4c06d.png) no-repeat center bottom,linear-gradient(180deg, rgba(204,204,204,1) 0%, rgba(246,246,246,1) 15%, rgba(255,255,255,1) 51%, rgba(246,246,246,1) 85%, rgba(204,204,204,1) 100%)","width":"800px","height":"auto"}' :rules="rules">
-			<div v-if="true" :style='{"margin":"0 0 10px 0","color":"#409eff","textAlign":"center","width":"100%","fontSize":"20px","textShadow":"4px 4px 2px rgba(64, 158, 255, .5)","fontWeight":"bold"}'>USER / LOGIN</div>
-			<div v-if="true" :style='{"margin":"0 0 4px 0","color":"#409eff","textAlign":"center","width":"100%","fontSize":"20px","textShadow":"4px 4px 2px rgba(64, 158, 255, .5)","fontWeight":"bold"}'>汽车租赁管理系统登录</div>
-			<el-form-item v-if="loginType==1" class="list-item" :style='{"width":"80%","margin":"0 auto 10px"}' prop="username">
-				<div v-if="true" :style='{"width":"64px","lineHeight":"40px","fontSize":"14px","color":"rgba(64, 158, 255, 1)"}'>账号：</div>
-				<input :style='{"border":"1px solid #999","padding":"0 10px","boxShadow":"1px 2px 4px #ccc","color":"#999","borderRadius":"8px","background":"-webkit-linear-gradient(top,#fff,#eee)","width":"100%","fontSize":"14px","height":"44px"}' v-model="loginForm.username" placeholder="请输入账户">
-			</el-form-item>
-			<el-form-item v-if="loginType==1" class="list-item" :style='{"width":"80%","margin":"0 auto 10px"}' prop="password">
-				<div v-if="true" :style='{"width":"64px","lineHeight":"40px","fontSize":"14px","color":"rgba(64, 158, 255, 1)"}'>密码：</div>
-				<input :style='{"border":"1px solid #999","padding":"0 10px","boxShadow":"1px 2px 4px #ccc","color":"#999","borderRadius":"8px","background":"-webkit-linear-gradient(top,#fff,#eee)","width":"100%","fontSize":"14px","height":"44px"}' v-model="loginForm.password" placeholder="请输入密码" type="password">
-			</el-form-item>
-			<el-form-item v-if="roles.length>1" class="list-type" :style='{"width":"80%","margin":"20px auto"}' prop="role">
-				<el-radio v-model="loginForm.tableName" :label="item.tableName" v-for="(item, index) in roles" :key="index" @change.native="getCurrentRow(item)">{{item.roleName}}</el-radio>
-			</el-form-item>
-			<el-form-item :style='{"width":"80%","margin":"20px auto"}'>
-				<el-button v-if="loginType==1" :style='{"border":"0","cursor":"pointer","padding":"0 24px","boxShadow":"1px 2px 3px #52a1db","margin":"0 5px","outline":"none","color":"#fff","borderRadius":"30%","background":"radial-gradient(circle, rgba(128,184,246,1) 0%, rgba(36,153,251,1) 100%)","width":"auto","fontSize":"14px","height":"40px"}' @click="submitForm('loginForm')">登录</el-button>
-				<el-button v-if="loginType==1" :style='{"border":"1px solid #bbb","cursor":"pointer","padding":"0 24px","boxShadow":"1px 2px 3px #ccc","margin":"0 5px","outline":"none","color":"#999","borderRadius":"30%","background":"#fff","width":"auto","fontSize":"14px","height":"40px"}' @click="resetForm('loginForm')">重置</el-button>
-                <el-upload v-if="loginType==2" :action="baseUrl + 'file/upload'" :show-file-list="false" :on-success="faceLogin">
-                    <el-button :style='{"border":"0","cursor":"pointer","padding":"0 24px","boxShadow":"1px 2px 3px #52a1db","margin":"0 5px","outline":"none","color":"#fff","borderRadius":"30%","background":"radial-gradient(circle, rgba(128,184,246,1) 0%, rgba(36,153,251,1) 100%)","width":"auto","fontSize":"14px","height":"40px"}'>人脸识别登录</el-button>
-                </el-upload>
-			</el-form-item>
-			<div :style='{"width":"80%","margin":"20px auto"}'>
-			<router-link :style='{"cursor":"pointer","margin":"0 5px","fontSize":"14px","textDecoration":"none","color":"#278bd5"}' :to="{path: '/register', query: {role: item.tableName,pageFlag:'register'}}" v-if="item.hasFrontRegister=='是'" v-for="(item, index) in roles" :key="index">注册{{item.roleName.replace('注册','')}}</router-link>
-			</div>
-		</el-form>
+  <div class="login-wrapper">
+    <div class="poster-side">
+      <div class="poster-content">
+        <div class="brand">
+          <i class="el-icon-truck"></i> xx租车
+        </div>
+        <h1 class="slogan">开启您的<br>尊贵驾乘之旅</h1>
+        <p class="sub-slogan">数千款车型任您选择，随心所欲，即刻出发。</p>
+      </div>
+      <div class="circle c1"></div>
+      <div class="circle c2"></div>
     </div>
-</div>
+
+    <div class="form-side">
+      <div class="form-container">
+        <div class="header">
+          <h2>欢迎回来</h2>
+          <p>请登录您的账号</p>
+        </div>
+
+        <el-form :model="loginForm" class="login-form" @keyup.enter.native="submitForm">
+          <el-form-item>
+            <div class="input-group">
+              <i class="el-icon-user"></i>
+              <el-input
+                  v-model="loginForm.username"
+                  placeholder="请输入账号"
+                  class="custom-input">
+              </el-input>
+            </div>
+          </el-form-item>
+
+          <el-form-item>
+            <div class="input-group">
+              <i class="el-icon-lock"></i>
+              <el-input
+                  v-model="loginForm.password"
+                  type="password"
+                  placeholder="请输入密码"
+                  show-password
+                  class="custom-input">
+              </el-input>
+            </div>
+          </el-form-item>
+
+          <input type="hidden" v-model="role">
+
+          <el-button type="primary" class="submit-btn" :loading="loading" @click="submitForm">
+            {{ loading ? '登录中...' : '立 即 登 录' }}
+          </el-button>
+
+          <div class="form-footer">
+            <span>还没有账号？</span>
+            <span class="link-btn" @click="$router.push('/register')">立即注册</span>
+          </div>
+        </el-form>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-
 export default {
-	//数据集合
-	data() {
-		return {
-            baseUrl: this.$config.baseUrl,
-            loginType: 1,
-			roleMenus: [{"backMenu":[{"child":[{"appFrontIcon":"cuIcon-newshot","buttons":["新增","查看","修改","删除"],"menu":"用户","menuJump":"列表","tableName":"yonghu"}],"menu":"用户管理"},{"child":[{"appFrontIcon":"cuIcon-copy","buttons":["新增","查看","修改","删除"],"menu":"普通管理员","menuJump":"列表","tableName":"putongguanliyuan"}],"menu":"普通管理员管理"},{"child":[{"appFrontIcon":"cuIcon-vip","buttons":["新增","查看","修改","删除"],"menu":"汽车类别","menuJump":"列表","tableName":"qicheleibie"}],"menu":"汽车类别管理"},{"child":[{"appFrontIcon":"cuIcon-explore","buttons":["查看","修改","删除"],"menu":"汽车信息","menuJump":"列表","tableName":"qichexinxi"}],"menu":"汽车信息管理"},{"child":[{"appFrontIcon":"cuIcon-discover","buttons":["查看","删除"],"menu":"租车订单","menuJump":"列表","tableName":"zuchedingdan"}],"menu":"租车订单管理"},{"child":[{"appFrontIcon":"cuIcon-phone","buttons":["查看","删除"],"menu":"取消订单","menuJump":"列表","tableName":"quxiaodingdan"}],"menu":"取消订单管理"},{"child":[{"appFrontIcon":"cuIcon-clothes","buttons":["查看","删除"],"menu":"还车信息","menuJump":"列表","tableName":"haichexinxi"}],"menu":"还车信息管理"},{"child":[{"appFrontIcon":"cuIcon-medal","buttons":["新增","查看","修改","删除"],"menu":"汽车资讯","menuJump":"列表","tableName":"qichezixun"}],"menu":"汽车资讯管理"},{"child":[{"appFrontIcon":"cuIcon-vipcard","buttons":["查看","修改","回复","删除"],"menu":"留言板管理","tableName":"messages"}],"menu":"留言板管理"},{"child":[{"appFrontIcon":"cuIcon-group","buttons":["查看","修改","删除"],"menu":"汽车论坛","tableName":"forum"}],"menu":"汽车论坛"},{"child":[{"appFrontIcon":"cuIcon-camera","buttons":["查看","修改"],"menu":"关于我们","tableName":"aboutus"},{"appFrontIcon":"cuIcon-phone","buttons":["新增","查看","修改","删除"],"menu":"轮播图管理","tableName":"config"},{"appFrontIcon":"cuIcon-pic","buttons":["查看","修改"],"menu":"系统简介","tableName":"systemintro"},{"appFrontIcon":"cuIcon-news","buttons":["新增","查看","修改","删除"],"menu":"公告信息","tableName":"news"}],"menu":"系统管理"}],"frontMenu":[{"child":[{"appFrontIcon":"cuIcon-rank","buttons":["查看","租赁汽车"],"menu":"汽车信息列表","menuJump":"列表","tableName":"qichexinxi"}],"menu":"汽车信息模块"},{"child":[{"appFrontIcon":"cuIcon-paint","buttons":["查看"],"menu":"汽车资讯列表","menuJump":"列表","tableName":"qichezixun"}],"menu":"汽车资讯模块"}],"hasBackLogin":"是","hasBackRegister":"否","hasFrontLogin":"否","hasFrontRegister":"否","roleName":"管理员","tableName":"users"},{"backMenu":[{"child":[{"appFrontIcon":"cuIcon-discover","buttons":["查看","删除","支付","归还汽车","取消订单"],"menu":"租车订单","menuJump":"列表","tableName":"zuchedingdan"}],"menu":"租车订单管理"},{"child":[{"appFrontIcon":"cuIcon-phone","buttons":["查看","删除"],"menu":"取消订单","menuJump":"列表","tableName":"quxiaodingdan"}],"menu":"取消订单管理"},{"child":[{"appFrontIcon":"cuIcon-clothes","buttons":["删除","查看"],"menu":"还车信息","menuJump":"列表","tableName":"haichexinxi"}],"menu":"还车信息管理"}],"frontMenu":[{"child":[{"appFrontIcon":"cuIcon-rank","buttons":["查看","租赁汽车"],"menu":"汽车信息列表","menuJump":"列表","tableName":"qichexinxi"}],"menu":"汽车信息模块"},{"child":[{"appFrontIcon":"cuIcon-paint","buttons":["查看"],"menu":"汽车资讯列表","menuJump":"列表","tableName":"qichezixun"}],"menu":"汽车资讯模块"}],"hasBackLogin":"是","hasBackRegister":"否","hasFrontLogin":"是","hasFrontRegister":"是","roleName":"用户","tableName":"yonghu"},{"backMenu":[{"child":[{"appFrontIcon":"cuIcon-explore","buttons":["新增","查看","修改","删除"],"menu":"汽车信息","menuJump":"列表","tableName":"qichexinxi"}],"menu":"汽车信息管理"},{"child":[{"appFrontIcon":"cuIcon-discover","buttons":["查看","删除","审核"],"menu":"租车订单","menuJump":"列表","tableName":"zuchedingdan"}],"menu":"租车订单管理"},{"child":[{"appFrontIcon":"cuIcon-phone","buttons":["查看","删除","审核","支付"],"menu":"取消订单","menuJump":"列表","tableName":"quxiaodingdan"}],"menu":"取消订单管理"},{"child":[{"appFrontIcon":"cuIcon-clothes","buttons":["查看","删除","审核"],"menu":"还车信息","menuJump":"列表","tableName":"haichexinxi"}],"menu":"还车信息管理"},{"child":[{"appFrontIcon":"cuIcon-medal","buttons":["新增","查看","修改","删除"],"menu":"汽车资讯","menuJump":"列表","tableName":"qichezixun"}],"menu":"汽车资讯管理"}],"frontMenu":[{"child":[{"appFrontIcon":"cuIcon-rank","buttons":["查看","租赁汽车"],"menu":"汽车信息列表","menuJump":"列表","tableName":"qichexinxi"}],"menu":"汽车信息模块"},{"child":[{"appFrontIcon":"cuIcon-paint","buttons":["查看"],"menu":"汽车资讯列表","menuJump":"列表","tableName":"qichezixun"}],"menu":"汽车资讯模块"}],"hasBackLogin":"是","hasBackRegister":"是","hasFrontLogin":"否","hasFrontRegister":"否","roleName":"普通管理员","tableName":"putongguanliyuan"}],
-			loginForm: {
-				username: '',
-				password: '',
-				tableName: '',
-				code: '',
-			},
-			role: '',
-            roles: [],
-			rules: {
-				username: [
-					{ required: true, message: '请输入账户', trigger: 'blur' }
-				],
-				password: [
-					{ required: true, message: '请输入密码', trigger: 'blur' }
-				]
-			},
-			codes: [{
-				num: 1,
-				color: '#000',
-				rotate: '10deg',
-				size: '16px'
-			}, {
-				num: 2,
-				color: '#000',
-				rotate: '10deg',
-				size: '16px'
-			}, {
-				num: 3,
-				color: '#000',
-				rotate: '10deg',
-				size: '16px'
-			}, {
-				num: 4,
-				color: '#000',
-				rotate: '10deg',
-				size: '16px'
-			}]
-		}
-	},
-	created() {
-        for(let item in this.roleMenus) {
-            if(this.roleMenus[item].hasFrontLogin=='是') {
-                this.roles.push(this.roleMenus[item]);
-            }
-        }
-	},
-	mounted() {
-	},
-    //方法集合
-    methods: {
-		randomString() {
-			var len = 4;
-			var chars = [
-			  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-			  'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-			  'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-			  'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-			  'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2',
-			  '3', '4', '5', '6', '7', '8', '9'
-			]
-			var colors = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
-			var sizes = ['14', '15', '16', '17', '18']
-
-			var output = []
-			for (var i = 0; i < len; i++) {
-			  // 随机验证码
-			  var key = Math.floor(Math.random() * chars.length)
-			  this.codes[i].num = chars[key]
-			  // 随机验证码颜色
-			  var code = '#'
-			  for (var j = 0; j < 6; j++) {
-			    var key = Math.floor(Math.random() * colors.length)
-			    code += colors[key]
-			  }
-			  this.codes[i].color = code
-			  // 随机验证码方向
-			  var rotate = Math.floor(Math.random() * 45)
-			  var plus = Math.floor(Math.random() * 2)
-			  if (plus == 1) rotate = '-' + rotate
-			  this.codes[i].rotate = 'rotate(' + rotate + 'deg)'
-			  // 随机验证码字体大小
-			  var size = Math.floor(Math.random() * sizes.length)
-			  this.codes[i].size = sizes[size] + 'px'
-			}
-		},
-      getCurrentRow(row) {
-        this.role = row.roleName;
-      },
-      submitForm(formName) {
-        if (this.roles.length!=1) {
-            if (!this.role) {
-                this.$message.error("请选择登录用户类型");
-                return false;
-            }
-        } else {
-            this.role = this.roles[0].roleName;
-            this.loginForm.tableName = this.roles[0].tableName;
-        }
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            this.$http.get(`${this.loginForm.tableName}/login`, {params: this.loginForm}).then(res => {
-              if (res.data.code === 0) {
-                localStorage.setItem('Token', res.data.token);
-                localStorage.setItem('UserTableName', this.loginForm.tableName);
-                localStorage.setItem('username', this.loginForm.username);
-                localStorage.setItem('adminName', this.loginForm.username);
-                localStorage.setItem('sessionTable', this.loginForm.tableName);
-                localStorage.setItem('role', this.role);
-                localStorage.setItem('keyPath', this.$config.indexNav.length+2);
-                this.$router.push('/index/center');
-                this.$message({
-                  message: '登录成功',
-                  type: 'success',
-                  duration: 1500,
-                });
-              } else {
-                this.$message.error(res.data.msg);
-              }
-            });
-          } else {
-            return false;
-          }
-        });
-      },
-      resetForm(formName) {
-        this.$refs[formName].resetFields();
+  data() {
+    return {
+      // 默认锁定为用户角色，若需管理员登录需另行处理或恢复选择框
+      role: 'yonghu',
+      loading: false,
+      loginForm: {
+        username: '',
+        password: ''
       }
     }
+  },
+  methods: {
+    submitForm() {
+      if (!this.loginForm.username || !this.loginForm.password) {
+        this.$message.warning('请输入账号和密码');
+        return;
+      }
+
+      this.loading = true;
+
+      // 1. 发起登录请求
+      this.$http.post(`${this.role}/login?username=${this.loginForm.username}&password=${this.loginForm.password}`).then(res => {
+        if (res.data.code === 0) {
+          // 2. 保存 Token 和 基础信息
+          localStorage.setItem('Token', res.data.token);
+          localStorage.setItem('role', this.role);
+          localStorage.setItem('sessionTable', this.role);
+          localStorage.setItem('adminName', this.loginForm.username);
+
+          // 3. 请求 Session 获取用户 ID (用于个人中心和收藏功能)
+          this.$http.get(`${this.role}/session`, {
+            headers: { 'Token': res.data.token }
+          }).then(sessionRes => {
+            if (sessionRes.data.code === 0) {
+              localStorage.setItem('userid', sessionRes.data.data.id);
+
+              // 4. 【修复】使用 onClose 确保提示框显示完毕后再跳转
+              this.$message({
+                message: '登录成功，正在跳转...',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.loading = false;
+                  this.$router.push('/index/home');
+                }
+              });
+            } else {
+              this.loading = false;
+              this.$message.error('获取用户信息失败');
+            }
+          }).catch(() => {
+            this.loading = false;
+          });
+        } else {
+          this.loading = false;
+          this.$message.error(res.data.msg);
+        }
+      }).catch(() => {
+        this.loading = false;
+        this.$message.error('连接服务器失败，请检查网络');
+      });
+    }
   }
+}
 </script>
 
-<style rel="stylesheet/scss" lang="scss" scoped>
-	.container {
-		position: relative;
-		background: url(http://codegen.caihongy.cn/20221029/e35b6d97fed04bd2a3e7b21cbb5114db.jpg) no-repeat;
+<style lang="scss" scoped>
+.login-wrapper {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #fff;
+}
 
-		.el-form-item {
-		  & /deep/ .el-form-item__content {
-		    width: 100%;
-		  }
-		}
+/* 左侧海报样式 */
+.poster-side {
+  flex: 1.2; // 占比略大
+  background: linear-gradient(135deg, #00c292 0%, #0ba360 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 80px;
+  overflow: hidden;
+  color: #fff;
 
-		.list-item /deep/ .el-input .el-input__inner {
-			border: 1px solid #999;
-			border-radius: 8px;
-			padding: 0 10px;
-			box-shadow: 1px 2px 4px #ccc;
-			color: #999;
-			background: -webkit-linear-gradient(top,#fff,#eee);
-			width: 100%;
-			font-size: 14px;
-			height: 44px;
-		}
+  // 背景图叠加，增加质感
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://images.unsplash.com/photo-1485291571150-772bcfc10da5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80') no-repeat center center;
+    background-size: cover;
+    opacity: 0.2; // 让图片隐约可见，不抢文字
+    mix-blend-mode: overlay;
+  }
 
-		.list-code /deep/ .el-input .el-input__inner {
-			border: 1px solid #999;
-			border-radius: 8px;
-			padding: 0 10px;
-			box-shadow: 1px 2px 4px #ccc;
-			outline: none;
-			color: #999;
-			background: -webkit-linear-gradient(top,#fff,#eee);
-			display: inline-block;
-			vertical-align: middle;
-			width: calc(100% - 164px);
-			font-size: 14px;
-			height: 44px;
-		}
+  .poster-content {
+    position: relative;
+    z-index: 2;
+  }
 
-		.list-type /deep/ .el-radio__input .el-radio__inner {
-			background: rgba(53, 53, 53, 0);
-			border-color: #666666;
-		}
-		.list-type /deep/ .el-radio__input.is-checked .el-radio__inner {
-			background: rgba(64, 158, 255, 1);
-			border-color: rgba(64, 158, 255, 1);
-		}
-		.list-type /deep/ .el-radio__label {
-			color: #666666;
-			font-size: 14px;
-		}
-		.list-type /deep/ .el-radio__input.is-checked+.el-radio__label {
-			color: rgba(64, 158, 255, 1);
-			font-size: 14px;
-		}
-	}
+  .brand {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    i { margin-right: 10px; font-size: 30px; }
+  }
+
+  .slogan {
+    font-size: 56px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .sub-slogan {
+    font-size: 18px;
+    opacity: 0.9;
+    max-width: 400px;
+  }
+
+  // 装饰圆圈
+  .circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+  }
+  .c1 { width: 300px; height: 300px; top: -50px; right: -50px; }
+  .c2 { width: 500px; height: 500px; bottom: -100px; left: -100px; }
+}
+
+/* 右侧表单样式 */
+.form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+
+  .form-container {
+    width: 400px;
+    padding: 0 20px;
+  }
+
+  .header {
+    margin-bottom: 40px;
+    h2 {
+      font-size: 32px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #999;
+      font-size: 16px;
+    }
+  }
+
+  .input-group {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #f0f0f0;
+    padding: 5px 0;
+    transition: border-color 0.3s;
+    margin-bottom: 10px;
+
+    &:focus-within {
+      border-color: #00c292;
+      i { color: #00c292; }
+    }
+
+    i {
+      font-size: 20px;
+      color: #c0c4cc;
+      margin-right: 10px;
+      transition: color 0.3s;
+    }
+  }
+
+  // 覆盖 Element UI 输入框默认样式
+  /deep/ .custom-input .el-input__inner {
+    border: none;
+    padding: 0;
+    height: 40px;
+    font-size: 16px;
+    background: transparent !important;
+    &:focus { box-shadow: none; }
+  }
+
+  .submit-btn {
+    width: 100%;
+    height: 50px;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 30px;
+    background: linear-gradient(90deg, #00c292 0%, #0ba360 100%);
+    border: none;
+    box-shadow: 0 10px 20px rgba(0, 194, 146, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px rgba(0, 194, 146, 0.4);
+    }
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  .form-footer {
+    margin-top: 30px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+
+    .link-btn {
+      color: #00c292;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 5px;
+      &:hover { text-decoration: underline; }
+    }
+  }
+}
+
+/* 响应式适配 */
+@media (max-width: 900px) {
+  .poster-side {
+    display: none; // 小屏幕隐藏海报
+  }
+  .form-side {
+    flex: 1;
+    background: url('https://images.unsplash.com/photo-1485291571150-772bcfc10da5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80') no-repeat center center;
+    background-size: cover;
+
+    .form-container {
+      background: rgba(255,255,255,0.95);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+  }
+}
 </style>
