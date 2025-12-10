@@ -24,8 +24,8 @@ import com.baomidou.mybatisplus.enums.IdType;
 /**
  * 汽车信息
  * 数据库通用操作实体类（普通增删改查）
- * @author 
- * @email 
+ * @author
+ * @email
  * @date 2023-03-08 18:33:34
  */
 @TableName("qichexinxi")
@@ -34,9 +34,9 @@ public class QichexinxiEntity<T> implements Serializable {
 
 
 	public QichexinxiEntity() {
-		
+
 	}
-	
+
 	public QichexinxiEntity(T t) {
 		try {
 			BeanUtils.copyProperties(this, t);
@@ -45,7 +45,7 @@ public class QichexinxiEntity<T> implements Serializable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * 主键id
 	 */
@@ -54,122 +54,122 @@ public class QichexinxiEntity<T> implements Serializable {
 	/**
 	 * 车牌号
 	 */
-					
+
 	private String chepaihao;
-	
+
 	/**
 	 * 车辆型号
 	 */
-					
+
 	private String cheliangxinghao;
-	
+
 	/**
 	 * 汽车类别
 	 */
-					
+
 	private String qicheleibie;
-	
+
 	/**
 	 * 车辆品牌
 	 */
-					
+
 	private String cheliangpinpai;
-	
+
 	/**
 	 * 价格
 	 */
-					
+
 	private Float jiage;
-	
+
 	/**
 	 * 颜色
 	 */
-					
+
 	private String yanse;
-	
+
 	/**
 	 * 状态
 	 */
-					
+
 	private String zhuangtai;
-	
+
 	/**
 	 * 换挡方式
 	 */
-					
+
 	private String huandangfangshi;
-	
+
 	/**
 	 * 车辆照片
 	 */
-					
+
 	private String cheliangzhaopian;
-	
+
 	/**
 	 * 座位数
 	 */
-					
+
 	private Integer zuoweishu;
-	
+
 	/**
 	 * 汽车排量
 	 */
-					
+
 	private String qichepailiang;
-	
+
 	/**
 	 * 汽车价格
 	 */
-					
+
 	private Float qichejiage;
-	
+
 	/**
 	 * 出厂年份
 	 */
-					
+
 	private String chuchangnianfen;
-	
+
 	/**
 	 * 登记日期
 	 */
-				
+
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd")
-	@DateTimeFormat 		
+	@DateTimeFormat
 	private Date dengjiriqi;
-	
+
 	/**
 	 * 汽车简介
 	 */
-					
+
 	private String qichejianjie;
-	
+
 	/**
 	 * 管理账号
 	 */
-					
+
 	private String guanlizhanghao;
-	
+
 	/**
 	 * 管理姓名
 	 */
-					
+
 	private String guanlixingming;
-	
+
 	/**
 	 * 最近点击时间
 	 */
-				
+
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
-	@DateTimeFormat 		
+	@DateTimeFormat
 	private Date clicktime;
-	
+
 	/**
 	 * 点击次数
 	 */
-					
+
 	private Integer clicknum;
-	
-	
+
+
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat
 	private Date addtime;
@@ -416,5 +416,29 @@ public class QichexinxiEntity<T> implements Serializable {
 	public Integer getClicknum() {
 		return clicknum;
 	}
+	/**
+	 * 经度
+	 */
+	@TableField("longitude")
+	private String longitude;
 
+	/**
+	 * 纬度
+	 */
+	@TableField("latitude")
+	private String latitude;
+
+	// Getter 和 Setter 方法
+	public String getLongitude() {
+		return longitude;
+	}
+	public void setLongitude(String longitude) {
+		this.longitude = longitude;
+	}
+	public String getLatitude() {
+		return latitude;
+	}
+	public void setLatitude(String latitude) {
+		this.latitude = latitude;
+	}
 }

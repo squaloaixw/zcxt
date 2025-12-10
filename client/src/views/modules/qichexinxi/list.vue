@@ -92,7 +92,13 @@
       </div>
     </template>
 
-    <add-or-update v-if="addOrUpdateFlag" :parent="this" ref="addOrUpdate"></add-or-update>
+    <add-or-update
+        v-if="addOrUpdateFlag"
+        ref="addOrUpdate"
+        @refreshDataList="finishAddOrUpdate"
+        @cancel="cancelAddOrUpdate">
+    </add-or-update>
+
     <zuchedingdan-cross-add-or-update v-if="zuchedingdanCrossAddOrUpdateFlag" :parent="this" ref="zuchedingdanCrossaddOrUpdate"></zuchedingdan-cross-add-or-update>
   </div>
 </template>
@@ -142,6 +148,19 @@ export default {
       });
       this.zhuangtaiOptions = "已出租,未出租".split(',')
     },
+
+    // 新增：处理子组件完成（提交成功）
+    finishAddOrUpdate() {
+      this.showFlag = true;
+      this.addOrUpdateFlag = false;
+      this.getDataList(); // 刷新列表
+    },
+    // 新增：处理子组件取消（点击返回）
+    cancelAddOrUpdate() {
+      this.showFlag = true;
+      this.addOrUpdateFlag = false;
+    },
+
     // 重置按钮逻辑
     resetForm() {
       this.searchForm = {
@@ -218,7 +237,9 @@ export default {
       this.showFlag = false;
       this.addOrUpdateFlag = false;
       this.zuchedingdanCrossAddOrUpdateFlag = true;
-      this.$storage.set('crossObj',row);
+      // 深拷贝，避免 __ob__ 警告
+      let cleanRow = JSON.parse(JSON.stringify(row));
+      this.$storage.set('crossObj',cleanRow);
       this.$storage.set('crossTable','qichexinxi');
       this.$storage.set('statusColumnName',statusColumnName);
       this.$storage.set('statusColumnValue',statusColumnValue);
@@ -242,7 +263,7 @@ export default {
         }
       }
       this.$nextTick(() => {
-        this.$refs.zuchedingdanCrossaddOrUpdate.init(row.id,type);
+        this.$refs.zuchedingdanCrossaddOrUpdate.init(cleanRow.id,type);
       });
     },
     deleteHandler(id) {
