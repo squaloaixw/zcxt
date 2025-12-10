@@ -44,12 +44,6 @@ Thumbs.db
 # Node.js 依赖目录
 node_modules/
 
-# 环境配置文件（敏感信息）
-*.env
-application-*.yml
-application-*.yaml
-application-*.properties
-
 # 单元测试报告
 /test-output/
 /surefire-reports/
@@ -64,11 +58,6 @@ application-*.properties
 # 临时上传文件（Spring Boot Multipart）
 /tmp/
 /uploads/
-
-# 数据库文件（如 H2）
-*.db
-*.mv.db
-*.h2.db
 
 # 其他缓存
 .cache/
