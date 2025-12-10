@@ -113,7 +113,7 @@
                   show-word-limit
               ></el-input>
               <div class="submit-btn-box">
-                <el-button type="primary" size="medium" @click="submitForm">发表评论</el-button>
+                <el-button type="primary" size="medium" @click="submitForm(0)">发表评论</el-button>
               </div>
             </div>
 
@@ -122,14 +122,32 @@
             <div class="comment-list">
               <div v-for="(item, index) in comments" :key="index" class="comment-item">
                 <div class="user-avatar">
-                  <el-avatar icon="el-icon-user-solid" :size="40"></el-avatar>
+                  <el-avatar :size="40" :src="item.avatarurl ? baseUrl + item.avatarurl : ''" icon="el-icon-user-solid"></el-avatar>
                 </div>
                 <div class="comment-body">
                   <div class="comment-header">
-                    <span class="username">用户{{ item.userid ? item.userid.toString().substring(0, 6) : '匿名' }}</span>
+                    <span class="username">{{ item.nickname || '匿名用户' }}</span>
                     <span class="time">{{ item.addtime }}</span>
+
+                    <el-button v-if="isLogin" type="text" size="mini" class="action-btn" @click="handleReply(item)">回复</el-button>
+                    <el-button v-if="isLogin && item.userid == currentUserId" type="text" size="mini" class="action-btn delete-btn" @click="handleDelete(item.id)">删除</el-button>
                   </div>
-                  <p class="comment-text">{{ item.content }}</p>
+
+                  <p class="comment-text">
+                    <span v-if="item.parentid && item.parentid != 0" style="color: #409EFF;">@回复: </span>
+                    {{ item.content }}
+                  </p>
+
+                  <div class="reply-input-box" v-if="replyId === item.id">
+                    <el-input
+                        size="small"
+                        v-model="replyContent"
+                        :placeholder="'回复 @' + item.nickname"
+                        class="reply-input"
+                    ></el-input>
+                    <el-button type="primary" size="small" @click="submitReply(item.id)">发送</el-button>
+                    <el-button size="small" @click="replyId = 0">取消</el-button>
+                  </div>
                 </div>
               </div>
               <el-empty v-if="comments.length === 0" description="暂无评论，快来抢沙发吧！"></el-empty>
@@ -159,13 +177,19 @@ export default {
       baseUrl: this.$config.baseUrl,
       detail: {},
       activeTab: 'details',
-      // 地图相关
       map: null,
+
       // 评论相关
       form: { content: '', userid: localStorage.getItem('userid'), refid: this.$route.query.id },
       comments: [],
       total: 0,
       pageSize: 10,
+
+      // 新增状态
+      isLogin: !!localStorage.getItem('Token'),
+      currentUserId: localStorage.getItem('userid'), // 用于判断删除权限
+      replyId: 0, // 当前正在回复哪条评论的ID
+      replyContent: '' // 回复的内容
     };
   },
   created() {
@@ -244,7 +268,13 @@ export default {
     },
     getComments(page) {
       this.$http.get(`discussqichexinxi/list`, {
-        params: { page, limit: this.pageSize, refid: this.$route.query.id }
+        params: {
+          page,
+          limit: this.pageSize,
+          refid: this.$route.query.id,
+          sort: 'addtime', // 确保后端支持排序，或者前端排
+          order: 'desc'
+        }
       }).then(res => {
         if (res.data.code == 0) {
           this.comments = res.data.data.list;
@@ -252,30 +282,79 @@ export default {
         }
       });
     },
+
     curChange(page) {
       this.getComments(page);
     },
+
+    // 提交主评论
     submitForm() {
+      this.doSubmit(this.form.content, 0);
+    },
+
+    // 点击回复按钮
+    handleReply(item) {
+      this.replyId = item.id;
+      this.replyContent = '';
+    },
+
+    // 提交回复
+    submitReply(parentId) {
+      if(!this.replyContent) {
+        this.$message.error('回复内容不能为空');
+        return;
+      }
+      this.doSubmit(this.replyContent, parentId);
+    },
+
+    // 统一提交逻辑
+    doSubmit(content, parentId) {
       if (!localStorage.getItem('Token')) {
         this.$message.warning('请先登录');
         this.$router.push('/login');
         return;
       }
-      if (!this.form.content) {
-        this.$message.error('请输入评论内容');
-        return;
-      }
-      // 重新获取最新的userid，防止token失效或切换账号
-      this.form.userid = localStorage.getItem('userid');
 
-      this.$http.post(`discussqichexinxi/add`, this.form).then(res => {
+      // 重新获取ID防止过期
+      const userid = localStorage.getItem('userid');
+
+      const payload = {
+        refid: this.$route.query.id,
+        userid: userid,
+        content: content,
+        parentid: parentId, // 0为主评论，其他为回复ID
+      };
+
+      this.$http.post(`discussqichexinxi/add`, payload).then(res => {
         if (res.data.code == 0) {
-          this.$message.success('评论发表成功');
+          this.$message.success('发表成功');
           this.form.content = '';
+          this.replyContent = '';
+          this.replyId = 0;
           this.getComments(1);
+        } else {
+          this.$message.error(res.data.msg);
         }
       });
     },
+
+    // 删除评论
+    handleDelete(id) {
+      this.$confirm('确认删除这条评论吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http.post(`discussqichexinxi/delete`, [id]).then(res => {
+          if (res.data.code == 0) {
+            this.$message.success('删除成功');
+            this.getComments(1);
+          } else {
+            this.$message.error(res.data.msg);
+          }
+        });
+      }).catch(() => {});
+    }
   },
 };
 </script>
@@ -484,7 +563,7 @@ $--border-color-base: #dcdfe6;
   }
 }
 
-/* 评论区样式 */
+/* 评论区样式 - 已整理修复 */
 .comments-section {
   .comment-input-box {
     margin-bottom: 40px;
@@ -500,7 +579,9 @@ $--border-color-base: #dcdfe6;
       padding: 20px 0;
       border-bottom: 1px solid $--border-color-base;
 
-      &:last-child { border-bottom: none; }
+      &:last-child {
+        border-bottom: none;
+      }
 
       .user-avatar {
         margin-right: 20px;
@@ -508,21 +589,57 @@ $--border-color-base: #dcdfe6;
 
       .comment-body {
         flex: 1;
+
         .comment-header {
           margin-bottom: 10px;
           display: flex;
           justify-content: space-between;
-          .username { font-weight: bold; color: $--text-main; }
-          .time { color: $--text-secondary; font-size: 13px; }
+          align-items: center; /* 确保垂直居中 */
+
+          .username {
+            font-weight: bold;
+            color: $--text-main;
+          }
+
+          .time {
+            color: $--text-secondary;
+            font-size: 13px;
+          }
+
+          /* 操作按钮样式 (回复/删除) */
+          .action-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            &.delete-btn {
+              color: $--color-danger;
+            }
+          }
         }
+
         .comment-text {
           color: $--text-regular;
           line-height: 1.6;
           font-size: 15px;
         }
+
+        /* 回复输入框样式 */
+        .reply-input-box {
+          margin-top: 10px;
+          background-color: #f5f7fa;
+          padding: 10px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          .reply-input {
+            flex: 1;
+          }
+        }
       }
     }
   }
+
   .pagination-box {
     text-align: center;
     margin-top: 30px;

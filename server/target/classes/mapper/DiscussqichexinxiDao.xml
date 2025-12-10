@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.DiscussqichexinxiDao">
+
+    <resultMap type="com.entity.DiscussqichexinxiEntity" id="discussqichexinxiMap">
+        <result property="addtime" column="addtime"/>
+        <result property="refid" column="refid"/>
+        <result property="userid" column="userid"/>
+        <result property="nickname" column="nickname"/>
+        <result property="avatarurl" column="avatarurl"/>
+        <result property="content" column="content"/>
+        <result property="parentid" column="parentid"/>
+    </resultMap>
+
+</mapper>
