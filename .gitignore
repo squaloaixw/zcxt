@@ -60,6 +60,7 @@ application-*.properties
 *.war
 *.ear
 
+
 # 临时上传文件（Spring Boot Multipart）
 /tmp/
 /uploads/
