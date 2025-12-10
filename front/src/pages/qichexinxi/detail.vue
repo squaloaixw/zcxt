@@ -36,7 +36,7 @@
                 <span class="unit">/天</span>
               </div>
               <div class="status-box">
-                <el-tag :type="detail.zhuangtai === '可租' ? 'success' : 'danger'" effect="dark" size="medium">
+                <el-tag :type="detail.zhuangtai === '未出租' ? 'success' : 'danger'" effect="dark" size="medium">
                   {{ detail.zhuangtai || '未知状态' }}
                 </el-tag>
               </div>
@@ -63,11 +63,6 @@
                 <span class="label">车牌:</span>
                 <span class="value">{{ detail.chepaihao }}</span>
               </div>
-              <div class="spec-item full-width">
-                <i class="el-icon-location-information"></i>
-                <span class="label">取车地点:</span>
-                <span class="value">{{ detail.quchedidian }}</span>
-              </div>
             </div>
 
             <el-divider></el-divider>
@@ -81,15 +76,23 @@
                   type="primary"
                   size="large"
                   class="rent-btn"
-                  :disabled="detail.zhuangtai !== '可租'"
+                  :disabled="detail.zhuangtai !== '未出租'"
                   @click="onTheNode(detail.id)"
               >
-                {{ detail.zhuangtai === '可租' ? '立即预定' : '暂时无法预定' }}
+                {{ detail.zhuangtai === '未出租' ? '立即预定' : '已出租' }}
               </el-button>
             </div>
           </div>
         </el-col>
       </el-row>
+    </div>
+
+    <div class="main-content-box map-section" v-if="detail.longitude && detail.latitude">
+      <div class="section-header">
+        <span class="section-title">车辆实时位置</span>
+        <span class="section-subtitle"><i class="el-icon-location"></i> {{ detail.address || detail.quchedidian }}</span>
+      </div>
+      <div id="user-map-container" style="width: 100%; height: 400px; border-radius: 4px; overflow: hidden;"></div>
     </div>
 
     <div class="tabs-content-box">
@@ -155,7 +158,9 @@ export default {
       swiperList: [],
       baseUrl: this.$config.baseUrl,
       detail: {},
-      activeTab: 'details', // 默认激活的 tab
+      activeTab: 'details',
+      // 地图相关
+      map: null,
       // 评论相关
       form: { content: '', userid: localStorage.getItem('userid'), refid: this.$route.query.id },
       comments: [],
@@ -175,13 +180,46 @@ export default {
           if (res.data.data.cheliangzhaopian) {
             this.swiperList = res.data.data.cheliangzhaopian.split(',');
           }
+
+          // 初始化地图
+          this.$nextTick(() => {
+            this.initMap();
+          });
         }
       });
     },
-    // 【修复】稳健的获取图片URL方法
+
+    // 初始化百度地图
+    initMap() {
+      // 检查是否有地图API和坐标信息
+      if (typeof BMap === 'undefined' || !this.detail.longitude || !this.detail.latitude) return;
+
+      this.map = new BMap.Map("user-map-container");
+      let point = new BMap.Point(this.detail.longitude, this.detail.latitude);
+
+      this.map.centerAndZoom(point, 16);
+      this.map.enableScrollWheelZoom(true);
+
+      // 添加标记
+      let marker = new BMap.Marker(point);
+      this.map.addOverlay(marker);
+
+      // 添加文字标签
+      let labelText = this.detail.address || this.detail.quchedidian || "车辆位置";
+      let label = new BMap.Label(labelText, { offset: new BMap.Size(20, -10) });
+      label.setStyle({
+        color: "#333",
+        border: "1px solid #ccc",
+        padding: "5px",
+        borderRadius: "4px",
+        fontSize: "12px",
+        background: "#fff"
+      });
+      marker.setLabel(label);
+    },
+
     getImageUrl(path) {
-      if (!path) return require('@/assets/logo.png'); // 替换为你的默认占位图
-      // 如果数据库存的是完整http路径则直接用，否则拼接baseUrl
+      if (!path) return require('@/assets/logo.png');
       return path.startsWith('http') ? path : this.baseUrl + path;
     },
     onTheNode(id) {
@@ -193,9 +231,13 @@ export default {
       }
     },
     chatTap() {
+      if (!localStorage.getItem('Token')) {
+        this.$message.warning('请先登录');
+        this.$router.push('/login');
+        return;
+      }
       this.$router.push({ path: '/index/messages' });
     },
-    // 获取评论
     getComments(page) {
       this.$http.get(`discussqichexinxi/list`, {
         params: { page, limit: this.pageSize, refid: this.$route.query.id }
@@ -209,7 +251,6 @@ export default {
     curChange(page) {
       this.getComments(page);
     },
-    // 提交评论
     submitForm() {
       if (!localStorage.getItem('Token')) {
         this.$message.warning('请先登录');
@@ -220,6 +261,9 @@ export default {
         this.$message.error('请输入评论内容');
         return;
       }
+      // 重新获取最新的userid，防止token失效或切换账号
+      this.form.userid = localStorage.getItem('userid');
+
       this.$http.post(`discussqichexinxi/add`, this.form).then(res => {
         if (res.data.code == 0) {
           this.$message.success('评论发表成功');
@@ -234,7 +278,7 @@ export default {
 
 <style lang="scss" scoped>
 // 变量定义
-$--color-primary: #00c292; // 主色调
+$--color-primary: #00c292;
 $--color-danger: #f56c6c;
 $--text-main: #303133;
 $--text-regular: #606266;
@@ -259,6 +303,28 @@ $--border-color-base: #dcdfe6;
   margin-bottom: 30px;
 }
 
+/* 地图区域样式 */
+.map-section {
+  .section-header {
+    margin-bottom: 15px;
+    border-left: 4px solid $--color-primary;
+    padding-left: 10px;
+    display: flex;
+    align-items: baseline;
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: $--text-main;
+      margin-right: 15px;
+    }
+    .section-subtitle {
+      font-size: 14px;
+      color: $--text-secondary;
+    }
+  }
+}
+
 /* 左侧图集样式 */
 .gallery-wrapper {
   .carousel-img-box {
@@ -274,7 +340,7 @@ $--border-color-base: #dcdfe6;
     .carousel-img {
       width: 100%;
       height: 100%;
-      object-fit: cover; // 关键：保持比例填充
+      object-fit: cover;
     }
   }
 
@@ -333,10 +399,10 @@ $--border-color-base: #dcdfe6;
     flex-wrap: wrap;
     gap: 20px 30px;
     margin-bottom: 20px;
-    flex-grow: 1; // 让它占据中间空间
+    flex-grow: 1;
 
     .spec-item {
-      width: calc(50% - 15px); // 两列布局
+      width: calc(50% - 15px);
       display: flex;
       align-items: center;
       font-size: 15px;
@@ -362,7 +428,7 @@ $--border-color-base: #dcdfe6;
     margin-bottom: 25px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; // 只显示两行简介
+    -webkit-line-clamp: 2;
     overflow: hidden;
   }
 
@@ -384,7 +450,7 @@ $--border-color-base: #dcdfe6;
       }
 
       &.is-disabled {
-        background-color: #a0cfff; // 禁用色
+        background-color: #a0cfff;
         border-color: #a0cfff;
         box-shadow: none;
       }
@@ -397,7 +463,7 @@ $--border-color-base: #dcdfe6;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-  overflow: hidden; // for border-radius
+  overflow: hidden;
 
   /deep/ .el-tabs__header {
     background: #f5f7fa;
@@ -410,7 +476,6 @@ $--border-color-base: #dcdfe6;
   .rich-text-content {
     line-height: 1.8;
     color: $--text-regular;
-    // 防止富文本图片溢出
     /deep/ img { max-width: 100%; height: auto; }
   }
 }
