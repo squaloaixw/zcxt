@@ -26,7 +26,7 @@
           <div class="info-wrapper">
             <div class="info-header">
               <h1 class="title">{{ detail.cheliangpinpai }} {{ detail.cheliangxinghao }}</h1>
-              <el-button class="consult-btn" type="text" icon="el-icon-chat-dot-round" @click="chatTap">在线咨询</el-button>
+              <el-button class="consult-btn" type="text" icon="el-icon-chat-line-square" @click="toComment">用户评论</el-button>
             </div>
 
             <div class="price-status-block">
@@ -89,7 +89,7 @@
 
     <div class="main-content-box map-section" v-if="detail.longitude && detail.latitude">
       <div class="section-header">
-        <span class="section-title">车辆实时位置</span>
+        <span class="section-title">车辆位置</span>
         <span class="section-subtitle"><i class="el-icon-location"></i> {{ detail.address || detail.quchedidian }}</span>
       </div>
       <div id="user-map-container" style="width: 100%; height: 400px; border-radius: 4px; overflow: hidden;"></div>
@@ -101,7 +101,7 @@
           <div class="rich-text-content" v-html="detail.qichexiangqing"></div>
         </el-tab-pane>
 
-        <el-tab-pane label="用户评价" name="comments" lazy>
+        <el-tab-pane label="用户评论" name="comments" lazy>
           <div class="comments-section">
             <div class="comment-input-box">
               <el-input
@@ -230,13 +230,17 @@ export default {
         this.$router.push('/login');
       }
     },
-    chatTap() {
-      if (!localStorage.getItem('Token')) {
-        this.$message.warning('请先登录');
-        this.$router.push('/login');
-        return;
-      }
-      this.$router.push({ path: '/index/messages' });
+    toComment() {
+      // 1. 切换 Tab 激活项为 'comments' (对应 el-tab-pane 的 name)
+      this.activeTab = 'comments';
+
+      // 2. 等待 DOM 更新后，平滑滚动到评论区
+      this.$nextTick(() => {
+        const commentSection = document.querySelector('.tabs-content-box');
+        if (commentSection) {
+          commentSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
     },
     getComments(page) {
       this.$http.get(`discussqichexinxi/list`, {
