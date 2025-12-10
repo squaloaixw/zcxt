@@ -418,6 +418,7 @@ export default {
           // 合并数据防止丢失
           this.ruleForm = { ...this.ruleForm, ...data.data };
 
+          // 【注意】这里原本是直接回显数据库存的地址，如果数据库没存地址，这里就是空的
           if (this.ruleForm.address) {
             this.searchKeyword = this.ruleForm.address;
           }
@@ -427,13 +428,32 @@ export default {
             this.ruleForm.qichejianjie = this.ruleForm.qichejianjie.replace(reg, '../../../springboot1ma2x/upload');
           }
 
+          // ---------- 修改开始：在地图渲染完成后，自动解析地址 ----------
           this.$nextTick(() => {
             if (typeof BMap !== 'undefined' && this.ruleForm.longitude && this.ruleForm.latitude) {
               let point = new BMap.Point(this.ruleForm.longitude, this.ruleForm.latitude);
               this.map.centerAndZoom(point, 16);
               this.setMapMarker(point);
+
+              // 新增逻辑：如果当前经纬度存在，调用百度接口解析中文地址
+              // 确保 geoc 对象存在（防止 initMap 还没跑完）
+              let geocoder = this.geoc || new BMap.Geocoder();
+
+              geocoder.getLocation(point, (rs) => {
+                let addr = rs.address;
+                if(!addr) {
+                  var addComp = rs.addressComponents;
+                  addr = (addComp.province||"") + (addComp.city||"") + (addComp.district||"") + (addComp.street||"") + (addComp.streetNumber||"");
+                }
+
+                // 将解析到的地址赋值给表单，这样输入框就会自动显示了
+                this.$set(this.ruleForm, 'address', addr);
+                this.searchKeyword = addr;
+              });
             }
           });
+          // ---------- 修改结束 ----------
+
         } else {
           this.$message.error(data.msg);
         }

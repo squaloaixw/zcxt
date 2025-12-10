@@ -23,8 +23,8 @@
             <el-button type="primary" icon="el-icon-search" @click="search()" size="medium">查询</el-button>
             <el-button icon="el-icon-refresh" @click="resetForm" size="medium">重置</el-button>
 
-            <el-button v-if="isAuth('qichexinxi','新增')" type="success" icon="el-icon-plus" @click="addOrUpdateHandler()" size="medium">新增车辆</el-button>
-            <el-button v-if="isAuth('qichexinxi','删除')" type="danger" icon="el-icon-delete" :disabled="dataListSelections.length <= 0" @click="deleteHandler()" size="medium">批量删除</el-button>
+            <el-button type="success" icon="el-icon-plus" @click="addOrUpdateHandler()" size="medium">新增车辆</el-button>
+            <el-button type="danger" icon="el-icon-delete" :disabled="dataListSelections.length <= 0" @click="deleteHandler()" size="medium">批量删除</el-button>
           </el-form-item>
         </el-form>
       </div>
