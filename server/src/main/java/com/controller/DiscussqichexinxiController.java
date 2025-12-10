@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.entity.DiscussqichexinxiEntity;
 import com.service.DiscussqichexinxiService;
-import com.service.YonghuService; // 引入用户Service以获取最新头像昵称
+import com.service.YonghuService;
 import com.entity.YonghuEntity;
 import com.utils.R;
 import com.utils.PageUtils;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import java.util.List;
 
 @RestController
 @RequestMapping("/discussqichexinxi")
@@ -26,7 +28,35 @@ public class DiscussqichexinxiController {
      */
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params){
-        PageUtils page = discussqichexinxiService.queryPage(params);
+        EntityWrapper<DiscussqichexinxiEntity> ew = new EntityWrapper<DiscussqichexinxiEntity>();
+
+        if(params.get("refid") != null){
+            ew.eq("refid", params.get("refid"));
+        }
+
+        ew.eq("parentid", 0);
+
+        PageUtils page = discussqichexinxiService.queryPage(params, ew);
+
+        // 5. 获取查询到的主评论列表
+        List<DiscussqichexinxiEntity> list = (List<DiscussqichexinxiEntity>)page.getList();
+
+        // 6. 遍历主评论，查找子评论
+        if(list != null && list.size() > 0){
+            for(DiscussqichexinxiEntity parent : list){
+                // 查询该主评论下的所有回复
+                EntityWrapper<DiscussqichexinxiEntity> childEw = new EntityWrapper<DiscussqichexinxiEntity>();
+                childEw.eq("parentid", parent.getId());
+                childEw.orderDesc(java.util.Collections.singleton("addtime")); // 子评论按时间倒序
+
+                List<DiscussqichexinxiEntity> children = discussqichexinxiService.selectList(childEw);
+                parent.setReplys(children);
+            }
+        }
+
+        // 7. 将处理好的列表放回 page 对象
+        page.setList(list);
+
         return R.ok().put("data", page);
     }
 

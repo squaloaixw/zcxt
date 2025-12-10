@@ -3,6 +3,7 @@ package com.service.impl;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper; // 必须导入这个
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.utils.PageUtils;
@@ -13,19 +14,29 @@ import com.service.DiscussqichexinxiService;
 
 @Service("discussqichexinxiService")
 public class DiscussqichexinxiServiceImpl extends ServiceImpl<DiscussqichexinxiDao, DiscussqichexinxiEntity> implements DiscussqichexinxiService {
+
+    // 原有的方法保持不变
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
-        // 这里可以根据 parentid 排序或者筛选
         EntityWrapper<DiscussqichexinxiEntity> ew = new EntityWrapper<>();
-        // 比如只查某个车的评论
         if(params.get("refid") != null){
             ew.eq("refid", params.get("refid"));
         }
-        ew.orderBy("addtime", false); // 按时间倒序
+        ew.orderBy("addtime", false);
 
         Page<DiscussqichexinxiEntity> page = this.selectPage(
                 new Query<DiscussqichexinxiEntity>(params).getPage(),
                 ew
+        );
+        return new PageUtils(page);
+    }
+
+    // 【新增】实现带有 Wrapper 参数的方法
+    @Override
+    public PageUtils queryPage(Map<String, Object> params, Wrapper<DiscussqichexinxiEntity> wrapper) {
+        Page<DiscussqichexinxiEntity> page = this.selectPage(
+                new Query<DiscussqichexinxiEntity>(params).getPage(),
+                wrapper
         );
         return new PageUtils(page);
     }

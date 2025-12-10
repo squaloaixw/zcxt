@@ -8,6 +8,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.beanutils.BeanUtils;
 import java.lang.reflect.InvocationTargetException;
+import com.baomidou.mybatisplus.annotations.TableField;
+import java.util.List;
 
 @TableName("discussqichexinxi")
 public class DiscussqichexinxiEntity implements Serializable {
@@ -25,10 +27,17 @@ public class DiscussqichexinxiEntity implements Serializable {
     private String nickname;
     private String avatarurl;
     private String content;
-    private Long parentid; // 新增字段：父评论ID
+    private Long parentid;
 
-    // 此处省略 standard Getters and Setters...
-    // 请务必使用IDE自动生成或手动添加所有字段的get/set方法
+    @TableField(exist = false)
+    private List<DiscussqichexinxiEntity> replys;
+    public List<DiscussqichexinxiEntity> getReplys() {
+        return replys;
+    }
+
+    public void setReplys(List<DiscussqichexinxiEntity> replys) {
+        this.replys = replys;
+    }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Date getAddtime() { return addtime; }

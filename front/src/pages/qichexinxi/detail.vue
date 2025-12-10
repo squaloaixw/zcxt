@@ -120,36 +120,62 @@
             <el-divider content-position="left">最新评论</el-divider>
 
             <div class="comment-list">
-              <div v-for="(item, index) in comments" :key="index" class="comment-item">
-                <div class="user-avatar">
-                  <el-avatar :size="40" :src="item.avatarurl ? baseUrl + item.avatarurl : ''" icon="el-icon-user-solid"></el-avatar>
-                </div>
-                <div class="comment-body">
-                  <div class="comment-header">
-                    <span class="username">{{ item.nickname || '匿名用户' }}</span>
-                    <span class="time">{{ item.addtime }}</span>
+              <div v-for="(item, index) in comments" :key="index" class="comment-item-wrapper">
 
-                    <el-button v-if="isLogin" type="text" size="mini" class="action-btn" @click="handleReply(item)">回复</el-button>
-                    <el-button v-if="isLogin && item.userid == currentUserId" type="text" size="mini" class="action-btn delete-btn" @click="handleDelete(item.id)">删除</el-button>
+                <div class="comment-item">
+                  <div class="user-avatar">
+                    <el-avatar :size="40" :src="item.avatarurl ? baseUrl + item.avatarurl : ''" icon="el-icon-user-solid"></el-avatar>
                   </div>
+                  <div class="comment-body">
+                    <div class="comment-header">
+                      <span class="username">{{ item.nickname || '匿名用户' }}</span>
 
-                  <p class="comment-text">
-                    <span v-if="item.parentid && item.parentid != 0" style="color: #409EFF;">@回复: </span>
-                    {{ item.content }}
-                  </p>
+                      <div style="display: flex; align-items: center;">
+                        <span class="time" style="margin-right: 15px; font-size: 12px; color: #999;">{{ item.addtime }}</span>
+                        <el-button v-if="isLogin" type="text" size="mini" @click="handleReply(item)">回复</el-button>
+                        <el-button v-if="isLogin && item.userid == currentUserId" type="text" size="mini" style="color: #f56c6c; margin-left: 10px;" @click="handleDelete(item.id)">删除</el-button>
+                      </div>
+                    </div>
 
-                  <div class="reply-input-box" v-if="replyId === item.id">
-                    <el-input
-                        size="small"
-                        v-model="replyContent"
-                        :placeholder="'回复 @' + item.nickname"
-                        class="reply-input"
-                    ></el-input>
-                    <el-button type="primary" size="small" @click="submitReply(item.id)">发送</el-button>
-                    <el-button size="small" @click="replyId = 0">取消</el-button>
+                    <div class="comment-content" style="margin: 8px 0; line-height: 1.6; color: #666;">
+                      {{ item.content }}
+                    </div>
+
+                    <div class="reply-input-box" v-if="replyId === item.id">
+                      <el-input
+                          size="small"
+                          v-model="replyContent"
+                          :placeholder="'回复 @' + item.nickname"
+                          class="reply-input"
+                      ></el-input>
+                      <el-button type="primary" size="small" @click="submitReply(item.id)">发送</el-button>
+                      <el-button size="small" @click="replyId = 0">取消</el-button>
+                    </div>
                   </div>
                 </div>
+
+                <div class="child-comments" v-if="item.replys && item.replys.length > 0">
+                  <div v-for="(reply, rIndex) in item.replys" :key="rIndex" class="reply-item">
+                    <div class="user-avatar small">
+                      <el-avatar :size="25" :src="reply.avatarurl ? baseUrl + reply.avatarurl : ''" icon="el-icon-user-solid"></el-avatar>
+                    </div>
+                    <div class="reply-body">
+                      <div class="reply-header">
+                        <span class="username">{{ reply.nickname }}</span>
+                        <span class="reply-to" style="color: #909399; margin: 0 5px;">回复</span>
+                        <span class="target-name" style="color: #409EFF;">@{{ item.nickname }}</span>
+                        <span class="reply-time" style="float: right; font-size: 12px; color: #ccc;">{{ reply.addtime }}</span>
+
+                        <el-button v-if="isLogin && reply.userid == currentUserId" type="text" size="mini" style="float: right; color: #f56c6c; margin-right: 10px; padding: 0;" @click="handleDelete(reply.id)">删除</el-button>
+                      </div>
+                      <div class="reply-content">{{ reply.content }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <el-divider></el-divider>
               </div>
+
               <el-empty v-if="comments.length === 0" description="暂无评论，快来抢沙发吧！"></el-empty>
             </div>
 
@@ -574,69 +600,74 @@ $--border-color-base: #dcdfe6;
   }
 
   .comment-list {
+    .comment-item-wrapper {
+      margin-bottom: 20px;
+
+      /deep/ .el-divider--horizontal {
+        margin: 20px 0 0 0;
+      }
+    }
+
+    /* 主评论样式 */
     .comment-item {
       display: flex;
-      padding: 20px 0;
-      border-bottom: 1px solid $--border-color-base;
+      padding: 10px 0;
 
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .user-avatar {
-        margin-right: 20px;
-      }
+      .user-avatar { margin-right: 15px; }
 
       .comment-body {
         flex: 1;
-
         .comment-header {
-          margin-bottom: 10px;
           display: flex;
           justify-content: space-between;
-          align-items: center; /* 确保垂直居中 */
+          margin-bottom: 8px;
+          .username { font-weight: bold; font-size: 15px; color: #333; }
+          .time { color: #999; font-size: 12px; margin-right: 10px; }
+        }
+        .comment-content { font-size: 14px; color: #666; line-height: 1.6; }
+      }
+    }
 
-          .username {
-            font-weight: bold;
-            color: $--text-main;
-          }
+    /* 子评论（回复）样式 - 关键部分 */
+    .child-comments {
+      margin-left: 60px; /* 整体缩进 */
+      background-color: #f9f9f9; /* 浅灰色背景区别层级 */
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 10px;
 
-          .time {
-            color: $--text-secondary;
+      .reply-item {
+        display: flex;
+        margin-bottom: 15px;
+
+        &:last-child { margin-bottom: 0; }
+
+        .user-avatar.small { margin-right: 10px; }
+
+        .reply-body {
+          flex: 1;
+
+          .reply-header {
             font-size: 13px;
+            margin-bottom: 5px;
+
+            .username { font-weight: bold; color: #333; }
+            .reply-to { color: #909399; margin: 0 5px; }
+            .target-name { color: #409EFF; font-weight: 500; }
+            .reply-time { float: right; color: #ccc; font-size: 12px; }
+            .delete-btn { float: right; margin-left: 10px; padding: 0; }
           }
 
-          /* 操作按钮样式 (回复/删除) */
-          .action-btn {
-            margin-left: 10px;
-            cursor: pointer;
-            &.delete-btn {
-              color: $--color-danger;
-            }
-          }
-        }
-
-        .comment-text {
-          color: $--text-regular;
-          line-height: 1.6;
-          font-size: 15px;
-        }
-
-        /* 回复输入框样式 */
-        .reply-input-box {
-          margin-top: 10px;
-          background-color: #f5f7fa;
-          padding: 10px;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-
-          .reply-input {
-            flex: 1;
-          }
+          .reply-content { font-size: 13px; color: #555; }
         }
       }
+    }
+
+    /* 输入框微调 */
+    .reply-input-box {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
     }
   }
 
