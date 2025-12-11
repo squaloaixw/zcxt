@@ -106,8 +106,11 @@ export default {
     nextClick(page) {
       this.getNewsList(page);
     },
+    // --- 修复重点：修改了跳转传参方式 ---
     toNewsDetail(item) {
-      this.$router.push({path: '/index/newsDetail', query: {detailObj: JSON.stringify(item)}});
+      // 之前是 query: { detailObj: JSON.stringify(item) }
+      // 现在改为传递 id，与 news-detail.vue 的接收方式匹配
+      this.$router.push({path: '/index/newsDetail', query: { id: item.id }});
     }
   }
 }

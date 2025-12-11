@@ -1,167 +1,292 @@
 <template>
-  <div :style='{"border":"1px solid #dfdfdf","padding":"20px","margin":"20px auto 0","borderRadius":"16px","background":"#fff","width":"1200px","position":"relative"}'>
-    <div class="section-title" :style='{"margin":"0px 0","color":"#2087c3","borderRadius":"8px 8px 0 0","textAlign":"center","background":"url(http://codegen.caihongy.cn/20221029/f414ce6eeb09429c9bc4d3d6643d9bd1.png) no-repeat center top","fontSize":"24px","lineHeight":"150px","fontWeight":"bold"}'>汽车论坛</div>
-    <div class="section-content">
-      <div class="content-title">{{detail.title}}</div>
-      <div class="content-sub-title">发布人：{{detail.username}}&nbsp;&nbsp;发布时间：{{detail.addtime}}</div>
-      <el-divider></el-divider>
-      <div class="content-detail" v-html="detail.content"></div>
-      <el-card class="box-card">
-        <div slot="header" class="clearfix">
-          <span style="height: 40px;line-height: 40px;color: #666;font-size: 18px;">评论列表</span>
-          <el-button style="float: right;" icon="el-icon-plus" type="success" @click="dialogFormVisible = true">点击评论</el-button>
-        </div>
-        <span v-for="item in commentList" :key="item.id">
-          <div class="header-block">
-            <el-avatar v-if="item.avatarurl" :size="50" :src="baseUrl + item.avatarurl"></el-avatar>
-            <el-avatar v-if="!item.avatarurl" :size="50" :src="require('@/assets/touxiang.png')"></el-avatar>
-            <span class="userinfo">用户：{{item.username}}</span>
-          </div>
-          <div class="content-block-ask">
-            {{item.content}}
-          </div>
-          <el-divider></el-divider>
-        </span>
-      </el-card>
+  <div class="forum-detail-container">
+    <div class="breadcrumb-box">
+      <el-breadcrumb separator-class="el-icon-arrow-right">
+        <el-breadcrumb-item :to="{ path: '/index/home' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/index/forum' }">交流论坛</el-breadcrumb-item>
+        <el-breadcrumb-item>帖子详情</el-breadcrumb-item>
+      </el-breadcrumb>
     </div>
-    <el-dialog title="添加评论" :visible.sync="dialogFormVisible">
-      <el-form :model="form" :rules="rules" ref="form">
-        <el-form-item label="评论" label-width="60px" prop="content">
-          <el-input type="textarea" :rows="5" v-model="form.content" autocomplete="off" placeholder="请输入评论"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addForum('form')">确 定</el-button>
+
+    <div class="post-main-card">
+      <div class="post-header">
+        <span class="tag-badge" :class="detail.isdone === '开放' ? 'open' : 'closed'">
+          {{ detail.isdone === '开放' ? '进行中' : '已结帖' }}
+        </span>
+        <h1 class="post-title">{{ detail.title }}</h1>
       </div>
-    </el-dialog>
+
+      <div class="user-info-bar">
+        <el-avatar :size="50" :src="baseUrl + 'upload/touxiang.png'" icon="el-icon-user-solid"></el-avatar>
+        <div class="user-text">
+          <div class="name">{{ detail.username || '匿名用户' }} <span class="lz-tag">楼主</span></div>
+          <div class="time">发布于 {{ detail.addtime }}</div>
+        </div>
+      </div>
+
+      <div class="post-content" v-html="detail.content"></div>
+    </div>
+
+    <div class="reply-section">
+      <div class="section-header">
+        <span class="title">全部回复 ({{ commentList.length }})</span>
+      </div>
+
+      <div class="comment-list">
+        <div v-for="(item, index) in commentList" :key="item.id" class="comment-item">
+          <div class="avatar-col">
+            <el-avatar :size="40" :src="baseUrl + 'upload/touxiang.png'" icon="el-icon-user-solid"></el-avatar>
+          </div>
+          <div class="content-col">
+            <div class="info-row">
+              <span class="username">{{ item.username }}</span>
+              <span class="floor-num">#{{ index + 1 }}楼</span>
+            </div>
+            <div class="comment-text" v-html="item.content"></div>
+            <div class="action-row">
+              <span class="time">{{ item.addtime }}</span>
+            </div>
+          </div>
+        </div>
+        <el-empty v-if="commentList.length === 0" description="暂无回复，快来抢沙发吧"></el-empty>
+      </div>
+
+      <div class="comment-editor-box">
+        <div class="editor-header">发表回复</div>
+        <el-form>
+          <el-input
+              type="textarea"
+              :rows="5"
+              placeholder="请友善交流，文明发言..."
+              v-model="commentForm.content">
+          </el-input>
+          <div class="btn-row">
+            <el-button type="primary" @click="submitComment">发送回复</el-button>
+          </div>
+        </el-form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-  export default {
-    //数据集合
-    data() {
-      return {
-        baseUrl: '',
-        detail: {},
-        commentList: [],
-        dialogFormVisible: false,
-        form: {
-          content: '',
-          parentid: '',
-          userid: localStorage.getItem('userid'),
-          username: localStorage.getItem('username'),
-          avatarurl: '',
-        },
-        rules: {
-          content: [
-            { required: true, message: '请输入评论', trigger: 'blur' }
-          ]
+export default {
+  data() {
+    return {
+      baseUrl: this.$config.baseUrl,
+      detail: {},
+      commentList: [],
+      commentForm: {
+        content: '',
+        parentid: '',
+        userid: localStorage.getItem('userid'),
+        username: localStorage.getItem('username')
+      }
+    };
+  },
+  created() {
+    this.detail.id = this.$route.query.id;
+    this.init();
+  },
+  methods: {
+    init() {
+      // 1. 获取帖子详情
+      this.$http.get(`forum/detail/${this.detail.id}`).then(res => {
+        if (res.data.code == 0) {
+          this.detail = res.data.data;
+          // 2. 获取该帖子的评论 (parentid = 帖子id)
+          this.getComments();
+        }
+      });
+    },
+    getComments() {
+      this.$http.get(`forum/list`, {
+        params: {
+          parentid: this.detail.id,
+          sort: 'addtime',
+          order: 'asc'
+        }
+      }).then(res => {
+        if (res.data.code == 0) {
+          this.commentList = res.data.data.list;
+        }
+      });
+    },
+    submitComment() {
+      if (!this.commentForm.content) {
+        this.$message.error('请输入回复内容');
+        return;
+      }
+      if (!localStorage.getItem('Token')) {
+        this.$message.warning('请先登录');
+        this.$router.push('/login');
+        return;
+      }
+
+      this.commentForm.parentid = this.detail.id;
+      // 注意：部分系统 forum表复用，title可能也需要填
+      let payload = {
+        ...this.commentForm,
+        title: '回复：' + this.detail.title
+      };
+
+      this.$http.post('forum/add', payload).then(res => {
+        if (res.data.code == 0) {
+          this.$message.success('回复成功');
+          this.commentForm.content = '';
+          this.getComments();
+        } else {
+          this.$message.error(res.data.msg);
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+$--color-primary: #00c292;
+
+.forum-detail-container {
+  width: 1200px;
+  margin: 20px auto;
+}
+
+/* 楼主帖子主体样式 */
+.post-main-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 40px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+
+    .tag-badge {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-right: 15px;
+      color: #fff;
+      &.open { background: $--color-primary; }
+      &.closed { background: #909399; }
+    }
+
+    .post-title {
+      font-size: 26px;
+      color: #333;
+      margin: 0;
+      line-height: 1.3;
+    }
+  }
+
+  .user-info-bar {
+    display: flex;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 30px;
+
+    .user-text {
+      margin-left: 15px;
+      .name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+        .lz-tag {
+          font-size: 12px;
+          background: #e6f7ff;
+          color: #1890ff;
+          padding: 2px 6px;
+          border-radius: 2px;
+          margin-left: 8px;
+          font-weight: normal;
         }
       }
-    },
-    created() {
-      this.baseUrl = this.$config.baseUrl;
-      this.detail = Object.assign({}, JSON.parse(this.$route.query.detailObj));
-      this.getCommentList();
-    },
-    mounted() {
-      this.form.parentid = this.detail.id;
-    },
-    //方法集合
-    methods: {
-      getCommentList() {
-        this.$http.get(`forum/list/${this.detail.id}`).then(res => {
-          if (res.data.code == 0) {
-            this.commentList = res.data.data.childs;
-          }
-        });
-      },
-      addForum(formName) {
-        let sensitiveWords = "";
-        let sensitiveWordsArr = [];
-        if(sensitiveWords) {
-            sensitiveWordsArr = sensitiveWords.split(",");
-        }
-        for(var i=0; i<sensitiveWordsArr.length; i++){
-            //全局替换
-            var reg = new RegExp(sensitiveWordsArr[i],"g");
-            //判断内容中是否包括敏感词
-            if (this.form.content.indexOf(sensitiveWordsArr[i]) > -1) {
-                // 将敏感词替换为 **
-                this.form.content = this.form.content.replace(reg,"**");
-            }
-        }
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            this.form.avatarurl = localStorage.getItem('headportrait')?localStorage.getItem('headportrait'):'';
-            this.$http.post('forum/add', this.form).then(res => {
-              if (res.data.code == 0) {
-                this.$message({
-                  type: 'success',
-                  message: '评论成功!',
-                  duration: 1500,
-                  onClose: () => {
-                    this.form.content = '';
-                    this.getCommentList();
-                    this.dialogFormVisible = false;
-                  }
-                });
-              }
-            });
-          } else {
-            return false;
-          }
-        });
+      .time {
+        font-size: 13px;
+        color: #999;
       }
     }
   }
-</script>
 
-<style rel="stylesheet/scss" lang="scss" scoped>
-  .section {
-    width: 900px;
-    margin: 0 auto;
+  .post-content {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #444;
+    min-height: 200px;
+    /deep/ img { max-width: 100%; }
   }
+}
 
-  .section-content {
-      margin-top: 30px;
-  }
-  .content-title {
-      text-align: center;
-      font-size: 22px;
+/* 回复区域样式 */
+.reply-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+  .section-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    .title {
+      font-size: 18px;
       font-weight: bold;
+      color: #333;
+      border-left: 4px solid $--color-primary;
+      padding-left: 10px;
+    }
   }
-  .content-sub-title {
-      text-align: center;
-      margin-top: 20px;
-      color: #888888;
-      font-size: 14px;
-  }
-  .clearfix:before,
-  .clearfix:after {
-    display: table;
-    content: "";
-  }
-  .clearfix:after {
-    clear: both
-  }
-  .header-block {
-    height: 50px;
-    line-height: 50px;
+
+  .comment-item {
     display: flex;
+    padding: 20px 0;
+    border-bottom: 1px solid #f5f5f5;
+
+    .avatar-col {
+      width: 60px;
+      text-align: center;
+    }
+    .content-col {
+      flex: 1;
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        .username { font-weight: bold; color: #555; }
+        .floor-num { color: #ccc; font-size: 12px; }
+      }
+      .comment-text {
+        color: #333;
+        line-height: 1.6;
+        margin-bottom: 10px;
+      }
+      .action-row {
+        .time { color: #999; font-size: 12px; }
+      }
+    }
   }
-  .userinfo {
-    align-self: center;
-    margin-left: 15px;
+
+  /* 评论输入框 */
+  .comment-editor-box {
+    margin-top: 40px;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+
+    .editor-header {
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .btn-row {
+      text-align: right;
+      margin-top: 15px;
+    }
   }
-  .content-block-ask {
-    margin-left: 65px;
-    margin-top: 15px;
-  }
-  .content-detail img {
-    max-width: 900px;
-    height: auto;
-  }
+}
 </style>

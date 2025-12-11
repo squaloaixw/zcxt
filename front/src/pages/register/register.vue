@@ -88,6 +88,7 @@ export default {
       tableName: '',
       registerForm: {
         xingbie: '',
+        touxiang: '' // 初始化头像字段，避免校验时报错
       },
       rules: {},
       xingbieOptions: ['男', '女'],
@@ -97,51 +98,71 @@ export default {
     this.pageFlag = this.$route.query.pageFlag;
     this.tableName = this.$route.query.role;
 
-    // --- 修复逻辑开始 ---
-    // 如果 URL 中没有传递 role 参数，默认为 'yonghu' (普通用户注册)
-    // 这样就保证了 "账号" 输入框能够通过 v-if 显示出来
+    // 默认注册用户角色，防止url参数缺失
     if (!this.tableName) {
       this.tableName = 'yonghu';
     }
-    // --- 修复逻辑结束 ---
 
     this.initRules();
   },
   methods: {
     initRules() {
+      // 基础公共规则
       const baseRules = {
         mima: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         mima2: [{ required: true, message: '请确认密码', trigger: 'blur' }],
-        nianling: [{ validator: this.$validate.isIntNumer, trigger: 'blur' }]
+        xingbie: [{ required: true, message: '请选择性别', trigger: 'change' }],
+        nianling: [
+          { required: true, message: '请输入年龄', trigger: 'blur' },
+          { validator: this.$validate.isIntNumer, trigger: 'blur' }
+        ],
+        touxiang: [{ required: true, message: '请上传头像', trigger: 'change' }]
       };
 
+      // 根据角色合并特定规则
       if (this.tableName === 'yonghu') {
         this.rules = {
           ...baseRules,
           zhanghao: [{ required: true, message: '请输入账号', trigger: 'blur' }],
           xingming: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-          shouji: [{ validator: this.$validate.isMobile, trigger: 'blur' }],
-          shenfenzheng: [{ validator: this.$validate.isIdCard, trigger: 'blur' }]
+          shouji: [
+            { required: true, message: '请输入手机号', trigger: 'blur' },
+            { validator: this.$validate.isMobile, trigger: 'blur' }
+          ],
+          shenfenzheng: [
+            { required: true, message: '请输入身份证', trigger: 'blur' },
+            { validator: this.$validate.isIdCard, trigger: 'blur' }
+          ]
         };
       } else if (this.tableName === 'putongguanliyuan') {
         this.rules = {
           ...baseRules,
           guanlizhanghao: [{ required: true, message: '请输入管理账号', trigger: 'blur' }],
           guanlixingming: [{ required: true, message: '请输入管理姓名', trigger: 'blur' }],
-          lianxidianhua: [{ validator: this.$validate.isMobile, trigger: 'blur' }]
+          lianxidianhua: [
+            { required: true, message: '请输入联系电话', trigger: 'blur' },
+            { validator: this.$validate.isMobile, trigger: 'blur' }
+          ]
         };
       }
     },
     handleAvatarSuccess(fileUrls) {
+      // 获取上传后的地址
       this.registerForm.touxiang = fileUrls.replace(new RegExp(this.$config.baseUrl, "g"), "");
+      // 手动触发一次头像字段的校验，消除错误提示
+      if(this.registerForm.touxiang) {
+        this.$refs.registerForm.clearValidate(['touxiang']);
+      }
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          // 再次确认密码一致性
           if (this.registerForm.mima !== this.registerForm.mima2) {
             this.$message.error('两次密码输入不一致');
             return;
           }
+
           this.$http.post(`${this.tableName}/register`, this.registerForm).then(res => {
             if (res.data.code === 0) {
               this.$message.success('注册成功');
@@ -150,6 +171,10 @@ export default {
               this.$message.error(res.data.msg);
             }
           });
+        } else {
+          // 校验不通过，页面会自动显示红色错误提示
+          console.log('error submit!!');
+          return false;
         }
       });
     }
@@ -161,6 +186,7 @@ export default {
 .register-container {
   position: fixed;
   left: 0; top: 0; width: 100%; height: 100vh;
+  // 背景图地址，可根据需要更换
   background: url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center;
   background-size: cover;
   display: flex;
@@ -214,6 +240,18 @@ export default {
     border-radius: 4px;
     border: 1px solid #dcdfe6;
     &:focus {
+      border-color: #00c292;
+    }
+  }
+
+  /* 头像上传组件微调 */
+  /deep/ .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    &:hover {
       border-color: #00c292;
     }
   }
