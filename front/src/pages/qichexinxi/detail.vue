@@ -81,6 +81,27 @@
               >
                 {{ detail.zhuangtai === '未出租' ? '立即预定' : '已出租' }}
               </el-button>
+
+              <el-button
+                  v-if="!storeupFlag"
+                  type="warning"
+                  size="large"
+                  icon="el-icon-star-off"
+                  @click="addStoreup"
+                  class="store-btn"
+              >
+                收藏
+              </el-button>
+              <el-button
+                  v-else
+                  type="success"
+                  size="large"
+                  icon="el-icon-star-on"
+                  @click="addStoreup"
+                  class="store-btn"
+              >
+                已收藏
+              </el-button>
             </div>
           </div>
         </el-col>
@@ -211,6 +232,9 @@ export default {
       total: 0,
       pageSize: 10,
 
+      // 收藏状态
+      storeupFlag: false,
+
       // 新增状态
       isLogin: !!localStorage.getItem('Token'),
       currentUserId: localStorage.getItem('userid'), // 用于判断删除权限
@@ -221,6 +245,7 @@ export default {
   created() {
     this.init();
     this.getComments(1);
+    this.getStoreupStatus(); // 初始化时查询收藏状态
   },
   methods: {
     init() {
@@ -237,6 +262,72 @@ export default {
           });
         }
       });
+    },
+
+    // 查询当前用户是否收藏过该汽车
+    getStoreupStatus() {
+      if (!localStorage.getItem('Token')) return;
+      this.$http.get('storeup/list', {
+        params: {
+          page: 1,
+          limit: 1,
+          refid: this.$route.query.id,
+          tablename: 'qichexinxi',
+          userid: localStorage.getItem('userid')
+        }
+      }).then(res => {
+        if (res.data.code == 0 && res.data.data.list.length > 0) {
+          this.storeupFlag = true;
+        } else {
+          this.storeupFlag = false;
+        }
+      });
+    },
+
+    // 点击收藏/取消收藏
+    addStoreup() {
+      if (!localStorage.getItem('Token')) {
+        this.$message.warning('请先登录');
+        this.$router.push('/login');
+        return;
+      }
+
+      if (this.storeupFlag) {
+        // --- 取消收藏逻辑 ---
+        this.$http.get('storeup/list', {
+          params: {
+            page: 1,
+            limit: 1,
+            refid: this.$route.query.id,
+            tablename: 'qichexinxi',
+            userid: localStorage.getItem('userid')
+          }
+        }).then(res => {
+          if (res.data.code == 0 && res.data.data.list.length > 0) {
+            let storeupId = res.data.data.list[0].id;
+            this.$http.post('storeup/delete', [storeupId]).then(delRes => {
+              if (delRes.data.code == 0) {
+                this.$message.success('已取消收藏');
+                this.storeupFlag = false;
+              }
+            });
+          }
+        });
+      } else {
+        // --- 添加收藏逻辑 ---
+        this.$http.post('storeup/save', {
+          userid: localStorage.getItem('userid'),
+          refid: this.$route.query.id,
+          tablename: 'qichexinxi',
+          name: this.detail.cheliangpinpai + ' ' + this.detail.cheliangxinghao, // 存品牌+型号
+          picture: this.swiperList.length > 0 ? this.swiperList[0] : '' // 存第一张图
+        }).then(res => {
+          if (res.data.code == 0) {
+            this.$message.success('收藏成功');
+            this.storeupFlag = true;
+          }
+        });
+      }
     },
 
     // 初始化百度地图
@@ -541,9 +632,13 @@ $--border-color-base: #dcdfe6;
     overflow: hidden;
   }
 
+  /* 操作栏样式调整 */
   .action-block {
+    display: flex; /* 改为 flex 布局 */
+    gap: 15px;    /* 按钮之间的间距 */
+
     .rent-btn {
-      width: 100%;
+      flex: 1; /* 预订按钮占据剩余空间 */
       height: 50px;
       font-size: 18px;
       font-weight: bold;
@@ -563,6 +658,12 @@ $--border-color-base: #dcdfe6;
         border-color: #a0cfff;
         box-shadow: none;
       }
+    }
+
+    .store-btn {
+      width: auto; /* 收藏按钮自动宽度 */
+      height: 50px;
+      font-size: 16px;
     }
   }
 }
@@ -589,7 +690,7 @@ $--border-color-base: #dcdfe6;
   }
 }
 
-/* 评论区样式 - 已整理修复 */
+/* 评论区样式 */
 .comments-section {
   .comment-input-box {
     margin-bottom: 40px;
@@ -628,7 +729,7 @@ $--border-color-base: #dcdfe6;
       }
     }
 
-    /* 子评论（回复）样式 - 关键部分 */
+    /* 子评论（回复）样式 */
     .child-comments {
       margin-left: 60px; /* 整体缩进 */
       background-color: #f9f9f9; /* 浅灰色背景区别层级 */

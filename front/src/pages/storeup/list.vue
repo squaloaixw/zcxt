@@ -82,7 +82,7 @@ export default {
     }
   },
   created() {
-    // 【核心修复】：如果 localStorage 中没有 storeupType，默认为 1（收藏），防止传 null 导致查不到数据
+    // 防止 localStorage 中没有 storeupType 导致查询失败
     this.storeupType = localStorage.getItem('storeupType') ? localStorage.getItem('storeupType') : 1;
     this.getStoreupList(1);
   },
@@ -121,9 +121,16 @@ export default {
     nextClick(page) {
       this.getStoreupList(page);
     },
+
+    // 【核心修复部分】
     toDetail(item) {
-      // 跳转到对应的详情页，注意 tablename 必须与路由配置一致
-      this.$router.push({path: `/index/${item.tablename}Detail`, query: {storeupObj: JSON.stringify(item)}});
+      // 1. item.tablename 是 'qichexinxi'
+      // 2. item.refid 是该汽车的真实 ID
+      // 3. 将 refid 赋值给 id 参数传递给详情页
+      this.$router.push({
+        path: `/index/${item.tablename}Detail`,
+        query: { id: item.refid }
+      });
     }
   }
 }
