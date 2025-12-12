@@ -42,8 +42,8 @@ import java.io.IOException;
 /**
  * 租车订单
  * 后端接口
- * @author 
- * @email 
+ * @author
+ * @email
  * @date 2023-03-08 18:33:34
  */
 @RestController
@@ -51,10 +51,6 @@ import java.io.IOException;
 public class ZuchedingdanController {
     @Autowired
     private ZuchedingdanService zuchedingdanService;
-
-
-    
-
 
     /**
      * 后端列表
@@ -75,13 +71,13 @@ public class ZuchedingdanController {
 
         return R.ok().put("data", page);
     }
-    
+
     /**
      * 前端列表
      */
 	@IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,ZuchedingdanEntity zuchedingdan, 
+    public R list(@RequestParam Map<String, Object> params,ZuchedingdanEntity zuchedingdan,
 		HttpServletRequest request){
         EntityWrapper<ZuchedingdanEntity> ew = new EntityWrapper<ZuchedingdanEntity>();
 
@@ -95,7 +91,7 @@ public class ZuchedingdanController {
     @RequestMapping("/lists")
     public R list( ZuchedingdanEntity zuchedingdan){
        	EntityWrapper<ZuchedingdanEntity> ew = new EntityWrapper<ZuchedingdanEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( zuchedingdan, "zuchedingdan")); 
+      	ew.allEq(MPUtil.allEQMapPre( zuchedingdan, "zuchedingdan"));
         return R.ok().put("data", zuchedingdanService.selectListView(ew));
     }
 
@@ -105,11 +101,11 @@ public class ZuchedingdanController {
     @RequestMapping("/query")
     public R query(ZuchedingdanEntity zuchedingdan){
         EntityWrapper< ZuchedingdanEntity> ew = new EntityWrapper< ZuchedingdanEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( zuchedingdan, "zuchedingdan")); 
+ 		ew.allEq(MPUtil.allEQMapPre( zuchedingdan, "zuchedingdan"));
 		ZuchedingdanView zuchedingdanView =  zuchedingdanService.selectView(ew);
 		return R.ok("查询租车订单成功").put("data", zuchedingdanView);
     }
-	
+
     /**
      * 后端详情
      */
@@ -128,7 +124,7 @@ public class ZuchedingdanController {
         ZuchedingdanEntity zuchedingdan = zuchedingdanService.selectById(id);
         return R.ok().put("data", zuchedingdan);
     }
-    
+
 
 
 
@@ -142,7 +138,7 @@ public class ZuchedingdanController {
         zuchedingdanService.insert(zuchedingdan);
         return R.ok();
     }
-    
+
     /**
      * 前端保存
      */
@@ -169,7 +165,7 @@ public class ZuchedingdanController {
     }
 
 
-    
+
 
     /**
      * 删除
@@ -179,16 +175,16 @@ public class ZuchedingdanController {
         zuchedingdanService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
     }
-    
+
     /**
      * 提醒接口
      */
 	@RequestMapping("/remind/{columnName}/{type}")
-	public R remindCount(@PathVariable("columnName") String columnName, HttpServletRequest request, 
+	public R remindCount(@PathVariable("columnName") String columnName, HttpServletRequest request,
 						 @PathVariable("type") String type,@RequestParam Map<String, Object> map) {
 		map.put("column", columnName);
 		map.put("type", type);
-		
+
 		if(type.equals("2")) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			Calendar c = Calendar.getInstance();
@@ -196,7 +192,7 @@ public class ZuchedingdanController {
 			Date remindEndDate = null;
 			if(map.get("remindstart")!=null) {
 				Integer remindStart = Integer.parseInt(map.get("remindstart").toString());
-				c.setTime(new Date()); 
+				c.setTime(new Date());
 				c.add(Calendar.DAY_OF_MONTH,remindStart);
 				remindStartDate = c.getTime();
 				map.put("remindstart", sdf.format(remindStartDate));
@@ -209,7 +205,7 @@ public class ZuchedingdanController {
 				map.put("remindend", sdf.format(remindEndDate));
 			}
 		}
-		
+
 		Wrapper<ZuchedingdanEntity> wrapper = new EntityWrapper<ZuchedingdanEntity>();
 		if(map.get("remindstart")!=null) {
 			wrapper.ge(columnName, map.get("remindstart"));
@@ -229,14 +225,82 @@ public class ZuchedingdanController {
 		int count = zuchedingdanService.selectCount(wrapper);
 		return R.ok().put("count", count);
 	}
-	
 
+	/**
+	 * 统计报表：支持按日、月、年统计订单数量
+	 * @param timeType 时间类型：day, month, year
+	 */
+	@IgnoreAuth
+	@RequestMapping("/chart/{timeType}")
+	public R chart(@PathVariable("timeType") String timeType) {
+		// 默认按日统计 (%Y-%m-%d)
+		String dateFormat = "%Y-%m-%d";
 
+		if("month".equals(timeType)){
+			// 按月统计 (%Y-%m)
+			dateFormat = "%Y-%m";
+		} else if("year".equals(timeType)){
+			// 按年统计 (%Y)
+			dateFormat = "%Y";
+		}
+		// 使用 EntityWrapper 构造聚合查询
+		EntityWrapper<ZuchedingdanEntity> ew = new EntityWrapper<ZuchedingdanEntity>();
+		// 关键逻辑：格式化时间并取别名为 x，统计数量为 y
+		ew.setSqlSelect("date_format(addtime, '" + dateFormat + "') as x, count(*) as y");
+		ew.groupBy("x"); // 按时间分组
+		ew.orderBy("x", true); // 按时间升序排列
 
+		// selectMaps 返回 Map 列表，适合这种非实体类的统计结果
+		List<Map<String, Object>> result = zuchedingdanService.selectMaps(ew);
 
-
-
-
-
-
+		return R.ok().put("data", result);
+	}
+	/**
+	 * 图表1：销售额趋势统计（支持日/月/年）
+	 */
+	@IgnoreAuth
+	@RequestMapping("/chart/amount/{timeType}")
+	public R chartAmount(@PathVariable("timeType") String timeType) {
+		String dateFormat = "%Y-%m-%d";
+		if("month".equals(timeType)){
+			dateFormat = "%Y-%m";
+		} else if("year".equals(timeType)){
+			dateFormat = "%Y";
+		}
+		EntityWrapper<ZuchedingdanEntity> ew = new EntityWrapper<ZuchedingdanEntity>();
+		// 只统计已支付的订单
+		ew.eq("ispay", "已支付");
+		// 统计总金额 sum(zongjia)
+		ew.setSqlSelect("date_format(addtime, '" + dateFormat + "') as x, sum(zongjia) as y");
+		ew.groupBy("x");
+		ew.orderBy("x", true);
+		List<Map<String, Object>> result = zuchedingdanService.selectMaps(ew);
+		return R.ok().put("data", result);
+	}
+	/**
+	 * 图表2：按汽车类别统计销售额（饼图数据）
+	 */
+	@IgnoreAuth
+	@RequestMapping("/chart/leibie/amount")
+	public R chartLeibieAmount() {
+		EntityWrapper<ZuchedingdanEntity> ew = new EntityWrapper<ZuchedingdanEntity>();
+		ew.eq("ispay", "已支付");
+		ew.setSqlSelect("qicheleibie as x, sum(zongjia) as y");
+		ew.groupBy("x");
+		List<Map<String, Object>> result = zuchedingdanService.selectMaps(ew);
+		return R.ok().put("data", result);
+	}
+	/**
+	 * 图表3：按车辆品牌统计销售额（饼图数据）
+	 */
+	@IgnoreAuth
+	@RequestMapping("/chart/pinpai/amount")
+	public R chartPinpaiAmount() {
+		EntityWrapper<ZuchedingdanEntity> ew = new EntityWrapper<ZuchedingdanEntity>();
+		ew.eq("ispay", "已支付");
+		ew.setSqlSelect("cheliangpinpai as x, sum(zongjia) as y");
+		ew.groupBy("x");
+		List<Map<String, Object>> result = zuchedingdanService.selectMaps(ew);
+		return R.ok().put("data", result);
+	}
 }

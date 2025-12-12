@@ -13,6 +13,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.entity.QichexinxiEntity;
+import com.entity.YonghuEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,11 @@ import com.utils.BaiduUtil;
 import com.utils.FileUtil;
 import com.utils.R;
 import com.utils.CommonUtil;
+import com.service.YonghuService;
+import com.service.ZuchedingdanService;
+import com.service.QichexinxiService;
+import com.entity.ZuchedingdanEntity;
+import java.math.BigDecimal;
 /**
  * 通用接口
  */
@@ -44,9 +51,20 @@ public class CommonController{
 	private CommonService commonService;
 
     private static AipFace client = null;
-    
+
     @Autowired
-    private ConfigService configService;    
+    private ConfigService configService;
+
+	// 2. 注入需要的 Service
+	@Autowired
+	private YonghuService yonghuService;
+
+	@Autowired
+	private ZuchedingdanService zuchedingdanService;
+
+	@Autowired
+	private QichexinxiService qichexinxiService;
+
 	/**
 	 * 获取table表中的column列表(联动接口)
 	 * @param table
@@ -74,7 +92,7 @@ public class CommonController{
 		List<String> data = commonService.getOption(params);
 		return R.ok().put("data", data);
 	}
-	
+
 	/**
 	 * 根据table中的column获取单条记录
 	 * @param table
@@ -91,7 +109,7 @@ public class CommonController{
 		Map<String, Object> result = commonService.getFollowByOption(params);
 		return R.ok().put("data", result);
 	}
-	
+
 	/**
 	 * 修改table表的sfsh状态
 	 * @param table
@@ -104,7 +122,7 @@ public class CommonController{
 		commonService.sh(map);
 		return R.ok();
 	}
-	
+
 	/**
 	 * 获取需要提醒的记录数
 	 * @param tableName
@@ -115,12 +133,12 @@ public class CommonController{
 	 */
 	@IgnoreAuth
 	@RequestMapping("/remind/{tableName}/{columnName}/{type}")
-	public R remindCount(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName, 
+	public R remindCount(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName,
 						 @PathVariable("type") String type,@RequestParam Map<String, Object> map) {
 		map.put("table", tableName);
 		map.put("column", columnName);
 		map.put("type", type);
-		
+
 		if(type.equals("2")) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			Calendar c = Calendar.getInstance();
@@ -128,7 +146,7 @@ public class CommonController{
 			Date remindEndDate = null;
 			if(map.get("remindstart")!=null) {
 				Integer remindStart = Integer.parseInt(map.get("remindstart").toString());
-				c.setTime(new Date()); 
+				c.setTime(new Date());
 				c.add(Calendar.DAY_OF_MONTH,remindStart);
 				remindStartDate = c.getTime();
 				map.put("remindstart", sdf.format(remindStartDate));
@@ -141,11 +159,11 @@ public class CommonController{
 				map.put("remindend", sdf.format(remindEndDate));
 			}
 		}
-		
+
 		int count = commonService.remindCount(map);
 		return R.ok().put("count", count);
 	}
-	
+
 	/**
 	 * 单列求和
 	 */
@@ -158,7 +176,7 @@ public class CommonController{
 		Map<String, Object> result = commonService.selectCal(params);
 		return R.ok().put("data", result);
 	}
-	
+
 	/**
 	 * 分组统计
 	 */
@@ -179,7 +197,7 @@ public class CommonController{
 		}
 		return R.ok().put("data", result);
 	}
-	
+
 	/**
 	 * （按值统计）
 	 */
@@ -224,7 +242,44 @@ public class CommonController{
 		}
 		return R.ok().put("data", result);
 	}
-	
 
+	/**
+	 * 3. 新增首页统计接口
+	 */
+	@IgnoreAuth
+	@RequestMapping("/index/count")
+	public R indexCount() {
+		Map<String, Object> data = new HashMap<>();
+
+		// 统计总用户数 (yonghu表)
+		int yonghuCount = yonghuService.selectCount(new EntityWrapper<YonghuEntity>());
+		data.put("yonghuCount", yonghuCount);
+
+		// 统计总订单数 (zuchedingdan表)
+		int dingdanCount = zuchedingdanService.selectCount(new EntityWrapper<ZuchedingdanEntity>());
+		data.put("dingdanCount", dingdanCount);
+
+		// 统计总交易额 (zuchedingdan表，筛选 ispay='已支付')
+		// 使用 selectMaps 进行聚合查询 sum(zongjia)
+		List<Map<String, Object>> amountList = zuchedingdanService.selectMaps(
+				new EntityWrapper<ZuchedingdanEntity>()
+						.eq("ispay", "已支付")
+						.setSqlSelect("sum(zongjia) as total")
+		);
+		double totalMoney = 0;
+		if (amountList != null && !amountList.isEmpty() && amountList.get(0) != null) {
+			Object total = amountList.get(0).get("total");
+			if (total != null) {
+				totalMoney = Double.parseDouble(total.toString());
+			}
+		}
+		data.put("totalMoney", totalMoney);
+
+		// 统计车辆库存 (qichexinxi表)
+		int qicheCount = qichexinxiService.selectCount(new EntityWrapper<QichexinxiEntity>());
+		data.put("qicheCount", qicheCount);
+
+		return R.ok().put("data", data);
+	}
 
 }
