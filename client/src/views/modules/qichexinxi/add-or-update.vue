@@ -76,7 +76,9 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="车辆原价" prop="qichejiage">
-            <el-input v-model="ruleForm.qichejiage" placeholder="请输入车辆原价" clearable :readonly="ro.qichejiage"></el-input>
+            <el-input v-model="ruleForm.qichejiage" placeholder="请输入车辆原价" clearable :readonly="ro.qichejiage">
+              <template #append>万元</template>
+            </el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">

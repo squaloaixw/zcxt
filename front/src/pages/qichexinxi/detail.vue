@@ -118,10 +118,6 @@
 
     <div class="tabs-content-box">
       <el-tabs type="border-card" v-model="activeTab">
-        <el-tab-pane label="车辆详情" name="details">
-          <div class="rich-text-content" v-html="detail.qichexiangqing"></div>
-        </el-tab-pane>
-
         <el-tab-pane label="用户评论" name="comments" lazy>
           <div class="comments-section">
             <div class="comment-input-box">
@@ -223,7 +219,7 @@ export default {
       swiperList: [],
       baseUrl: this.$config.baseUrl,
       detail: {},
-      activeTab: 'details',
+      activeTab: 'comments',
       map: null,
 
       // 评论相关
