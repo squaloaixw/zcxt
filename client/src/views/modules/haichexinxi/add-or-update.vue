@@ -37,11 +37,11 @@
 					<el-date-picker
 						format="yyyy 年 MM 月 dd 日"
 						value-format="yyyy-MM-dd"
-						v-model="ruleForm.haicheriqi" 
+						v-model="ruleForm.haicheriqi"
 						type="date"
 						:readonly="ro.haicheriqi"
 						placeholder="还车日期"
-					></el-date-picker> 
+					></el-date-picker>
 				</el-form-item>
 				<el-form-item :style='{"margin":"0 0 20px 0"}' class="input" v-else-if="ruleForm.haicheriqi" label="还车日期" prop="haicheriqi">
 					<el-input v-model="ruleForm.haicheriqi" placeholder="还车日期" readonly></el-input>
@@ -101,7 +101,7 @@
 				<el-button :style='{"border":"1px solid #1b5a90","cursor":"pointer","padding":"0","margin":"0","outline":"none","color":"#1b5a90","borderRadius":"4px","background":"rgba(255, 255, 255, 1)","width":"128px","lineHeight":"40px","fontSize":"14px","height":"40px"}' v-if="type=='info'" class="btn-close" @click="back()">返回</el-button>
 			</el-form-item>
 		</el-form>
-    
+
 
   </div>
 </template>
@@ -177,8 +177,8 @@ export default {
 		return {
 			id: '',
 			type: '',
-			
-			
+
+
 			ro:{
 				dingdanbianhao : false,
 				chepaihao : false,
@@ -197,8 +197,8 @@ export default {
 				sfsh : false,
 				shhf : false,
 			},
-			
-			
+
+
 			ruleForm: {
 				dingdanbianhao: '',
 				chepaihao: '',
@@ -216,8 +216,8 @@ export default {
 				crossrefid: '',
 				shhf: '',
 			},
-		
-			
+
+
 			rules: {
 				dingdanbianhao: [
 				],
@@ -265,7 +265,7 @@ export default {
 		this.ruleForm.haicheriqi = this.getCurDate()
 	},
 	methods: {
-		
+
 		// 下载
 		download(file){
 			window.open(`${file}`)
@@ -355,7 +355,7 @@ export default {
 							continue;
 						}
 				}
-				
+
 
 
 
@@ -373,15 +373,15 @@ export default {
 
 
 			}
-			
-			
+
+
 			// 获取用户信息
 			this.$http({
 				url: `${this.$storage.get('sessionTable')}/session`,
 				method: "get"
 			}).then(({ data }) => {
 				if (data && data.code === 0) {
-					
+
 					var json = data.data;
 					if(((json.zhanghao!=''&&json.zhanghao) || json.zhanghao==0) && this.$storage.get("role")!="管理员"){
 						this.ruleForm.zhanghao = json.zhanghao
@@ -403,8 +403,8 @@ export default {
 					this.$message.error(data.msg);
 				}
 			});
-			
-			
+
+
 		},
     // 多级联动参数
 
@@ -495,20 +495,20 @@ var objcross = this.$storage.getObj('crossObj');
 		 if(crossrefid && crossuserid) {
 			 this.ruleForm.crossuserid = crossuserid;
 			 this.ruleForm.crossrefid = crossrefid;
-			let params = { 
-				page: 1, 
-				limit: 10, 
+			let params = {
+				page: 1,
+				limit: 10,
 				crossuserid:this.ruleForm.crossuserid,
 				crossrefid:this.ruleForm.crossrefid,
-			} 
-			this.$http({ 
-				url: "haichexinxi/page", 
-				method: "get", 
-				params: params 
-			}).then(({ 
-				data 
-			}) => { 
-				if (data && data.code === 0) { 
+			}
+			this.$http({
+				url: "haichexinxi/page",
+				method: "get",
+				params: params
+			}).then(({
+				data
+			}) => {
+				if (data && data.code === 0) {
 				       if(data.data.total>=crossoptnum) {
 					     this.$message.error(this.$storage.get('tips'));
 					       return false;
@@ -537,8 +537,8 @@ var objcross = this.$storage.getObj('crossObj');
 					 });
 
 				       }
-				} else { 
-				} 
+				} else {
+				}
 			});
 		 } else {
 			 this.$http({
@@ -586,15 +586,15 @@ var objcross = this.$storage.getObj('crossObj');
 		width: 100%;
 		height: 500px;
 	}
-	
+
 	.search-box {
 		position: absolute;
 	}
-	
+
 	.el-date-editor.el-input {
 		width: auto;
 	}
-	
+
 	.add-update-preview .el-form-item /deep/ .el-form-item__label {
 	  	  padding: 0 10px 0 0;
 	  	  color: #666;
@@ -604,11 +604,11 @@ var objcross = this.$storage.getObj('crossObj');
 	  	  line-height: 40px;
 	  	  text-align: right;
 	  	}
-	
+
 	.add-update-preview .el-form-item /deep/ .el-form-item__content {
 	  margin-left: 80px;
 	}
-	
+
 	.add-update-preview .el-input /deep/ .el-input__inner {
 	  	  border: 1px solid #5479bb;
 	  	  border-radius: 4px;
@@ -620,7 +620,7 @@ var objcross = this.$storage.getObj('crossObj');
 	  	  font-size: 14px;
 	  	  height: 40px;
 	  	}
-	
+
 	.add-update-preview .el-select /deep/ .el-input__inner {
 	  	  border: 1px solid #5479bb;
 	  	  border-radius: 4px;
@@ -632,7 +632,7 @@ var objcross = this.$storage.getObj('crossObj');
 	  	  font-size: 14px;
 	  	  height: 40px;
 	  	}
-	
+
 	.add-update-preview .el-date-editor /deep/ .el-input__inner {
 	  	  border: 1px solid #5479bb;
 	  	  border-radius: 4px;
@@ -644,7 +644,7 @@ var objcross = this.$storage.getObj('crossObj');
 	  	  font-size: 14px;
 	  	  height: 40px;
 	  	}
-	
+
 	.add-update-preview /deep/ .el-upload--picture-card {
 		background: transparent;
 		border: 0;
@@ -654,7 +654,7 @@ var objcross = this.$storage.getObj('crossObj');
 		line-height: initial;
 		vertical-align: middle;
 	}
-	
+
 	.add-update-preview /deep/ .upload .upload-img {
 	  	  border: 1px dashed #5479bb;
 	  	  cursor: pointer;
@@ -666,7 +666,7 @@ var objcross = this.$storage.getObj('crossObj');
 	  	  text-align: center;
 	  	  height: 120px;
 	  	}
-	
+
 	.add-update-preview /deep/ .el-upload-list .el-upload-list__item {
 	  	  border: 1px dashed #5479bb;
 	  	  cursor: pointer;
@@ -678,7 +678,7 @@ var objcross = this.$storage.getObj('crossObj');
 	  	  text-align: center;
 	  	  height: 120px;
 	  	}
-	
+
 	.add-update-preview /deep/ .el-upload .el-icon-plus {
 	  	  border: 1px dashed #5479bb;
 	  	  cursor: pointer;
@@ -690,7 +690,7 @@ var objcross = this.$storage.getObj('crossObj');
 	  	  text-align: center;
 	  	  height: 120px;
 	  	}
-	
+
 	.add-update-preview .el-textarea /deep/ .el-textarea__inner {
 	  	  border: 1px solid #5479bb;
 	  	  border-radius: 4px;

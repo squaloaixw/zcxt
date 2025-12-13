@@ -38,12 +38,17 @@ import com.utils.MD5Util;
 import com.utils.MPUtil;
 import com.utils.CommonUtil;
 import java.io.IOException;
+import com.service.ZuchedingdanService;
+import com.entity.ZuchedingdanEntity;
+import com.service.QichexinxiService;
+import com.entity.QichexinxiEntity;
+import java.util.Calendar;
 
 /**
  * 还车信息
  * 后端接口
- * @author 
- * @email 
+ * @author
+ * @email
  * @date 2023-03-08 18:33:34
  */
 @RestController
@@ -52,9 +57,11 @@ public class HaichexinxiController {
     @Autowired
     private HaichexinxiService haichexinxiService;
 
+	@Autowired
+	private ZuchedingdanService zuchedingdanService;
 
-    
-
+	@Autowired
+	private QichexinxiService qichexinxiService;
 
     /**
      * 后端列表
@@ -75,13 +82,13 @@ public class HaichexinxiController {
 
         return R.ok().put("data", page);
     }
-    
+
     /**
      * 前端列表
      */
 	@IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,HaichexinxiEntity haichexinxi, 
+    public R list(@RequestParam Map<String, Object> params,HaichexinxiEntity haichexinxi,
 		HttpServletRequest request){
         EntityWrapper<HaichexinxiEntity> ew = new EntityWrapper<HaichexinxiEntity>();
 
@@ -95,7 +102,7 @@ public class HaichexinxiController {
     @RequestMapping("/lists")
     public R list( HaichexinxiEntity haichexinxi){
        	EntityWrapper<HaichexinxiEntity> ew = new EntityWrapper<HaichexinxiEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( haichexinxi, "haichexinxi")); 
+      	ew.allEq(MPUtil.allEQMapPre( haichexinxi, "haichexinxi"));
         return R.ok().put("data", haichexinxiService.selectListView(ew));
     }
 
@@ -105,11 +112,11 @@ public class HaichexinxiController {
     @RequestMapping("/query")
     public R query(HaichexinxiEntity haichexinxi){
         EntityWrapper< HaichexinxiEntity> ew = new EntityWrapper< HaichexinxiEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( haichexinxi, "haichexinxi")); 
+ 		ew.allEq(MPUtil.allEQMapPre( haichexinxi, "haichexinxi"));
 		HaichexinxiView haichexinxiView =  haichexinxiService.selectView(ew);
 		return R.ok("查询还车信息成功").put("data", haichexinxiView);
     }
-	
+
     /**
      * 后端详情
      */
@@ -128,34 +135,32 @@ public class HaichexinxiController {
         HaichexinxiEntity haichexinxi = haichexinxiService.selectById(id);
         return R.ok().put("data", haichexinxi);
     }
-    
+
 
 
 
     /**
      * 后端保存
      */
-    @RequestMapping("/save")
-    public R save(@RequestBody HaichexinxiEntity haichexinxi, HttpServletRequest request){
-    	haichexinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(haichexinxi);
-        haichexinxiService.insert(haichexinxi);
-        return R.ok();
-    }
-    
+	@RequestMapping("/save")
+	public R save(@RequestBody HaichexinxiEntity haichexinxi, HttpServletRequest request){
+		haichexinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+		handleReturnCar(haichexinxi);
+		haichexinxiService.insert(haichexinxi);
+		return R.ok();
+	}
+
     /**
      * 前端保存
      */
 	@IgnoreAuth
-    @RequestMapping("/add")
-    public R add(@RequestBody HaichexinxiEntity haichexinxi, HttpServletRequest request){
-    	haichexinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(haichexinxi);
-        haichexinxiService.insert(haichexinxi);
-        return R.ok();
-    }
-
-
+	@RequestMapping("/add")
+	public R add(@RequestBody HaichexinxiEntity haichexinxi, HttpServletRequest request){
+		haichexinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+		handleReturnCar(haichexinxi);
+		haichexinxiService.insert(haichexinxi);
+		return R.ok();
+	}
 
     /**
      * 修改
@@ -168,9 +173,6 @@ public class HaichexinxiController {
         return R.ok();
     }
 
-
-    
-
     /**
      * 删除
      */
@@ -179,16 +181,16 @@ public class HaichexinxiController {
         haichexinxiService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
     }
-    
+
     /**
      * 提醒接口
      */
 	@RequestMapping("/remind/{columnName}/{type}")
-	public R remindCount(@PathVariable("columnName") String columnName, HttpServletRequest request, 
+	public R remindCount(@PathVariable("columnName") String columnName, HttpServletRequest request,
 						 @PathVariable("type") String type,@RequestParam Map<String, Object> map) {
 		map.put("column", columnName);
 		map.put("type", type);
-		
+
 		if(type.equals("2")) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			Calendar c = Calendar.getInstance();
@@ -196,7 +198,7 @@ public class HaichexinxiController {
 			Date remindEndDate = null;
 			if(map.get("remindstart")!=null) {
 				Integer remindStart = Integer.parseInt(map.get("remindstart").toString());
-				c.setTime(new Date()); 
+				c.setTime(new Date());
 				c.add(Calendar.DAY_OF_MONTH,remindStart);
 				remindStartDate = c.getTime();
 				map.put("remindstart", sdf.format(remindStartDate));
@@ -209,7 +211,7 @@ public class HaichexinxiController {
 				map.put("remindend", sdf.format(remindEndDate));
 			}
 		}
-		
+
 		Wrapper<HaichexinxiEntity> wrapper = new EntityWrapper<HaichexinxiEntity>();
 		if(map.get("remindstart")!=null) {
 			wrapper.ge(columnName, map.get("remindstart"));
@@ -229,14 +231,67 @@ public class HaichexinxiController {
 		int count = haichexinxiService.selectCount(wrapper);
 		return R.ok().put("count", count);
 	}
-	
 
+	private void handleReturnCar(HaichexinxiEntity haichexinxi) {
+		// 1. 获取关联订单
+		ZuchedingdanEntity order = zuchedingdanService.selectOne(
+				new EntityWrapper<ZuchedingdanEntity>().eq("dingdanbianhao", haichexinxi.getDingdanbianhao())
+		);
 
+		if(order != null) {
+			// 2. 计算费用
+			try {
+				Date startDate = order.getChuzuriqi();
+				Integer rentDays = order.getZuqi();
+				Float dailyPrice = order.getJiage();
 
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(startDate);
+				cal.add(Calendar.DAY_OF_MONTH, rentDays);
+				Date expectedEndDate = cal.getTime(); // 预计还车时间
 
+				Date actualReturnDate = haichexinxi.getHaicheriqi();
+				if(actualReturnDate == null) actualReturnDate = new Date();
 
+				long diffMillis = actualReturnDate.getTime() - expectedEndDate.getTime();
+				long diffDays = diffMillis / (1000 * 3600 * 24);
 
+				if (diffDays == 0) {
+					haichexinxi.setJiesuanleixing("正常还车");
+					haichexinxi.setTuihuanjine(0f);
+					haichexinxi.setBujiaojine(0f);
+					haichexinxi.setHaichebeizhu(haichexinxi.getHaichebeizhu() + " (系统: 按时还车)");
+				} else if (diffDays < 0) {
+					long earlyDays = Math.abs(diffDays);
+					if(earlyDays > rentDays) earlyDays = rentDays;
+					float refund = earlyDays * dailyPrice;
+					haichexinxi.setJiesuanleixing("提前还车");
+					haichexinxi.setTuihuanjine(refund);
+					haichexinxi.setBujiaojine(0f);
+					haichexinxi.setHaichebeizhu(haichexinxi.getHaichebeizhu() + " (系统: 提前" + earlyDays + "天，退款" + refund + "元)");
+				} else {
+					float penalty = diffDays * dailyPrice;
+					haichexinxi.setJiesuanleixing("超期还车");
+					haichexinxi.setTuihuanjine(0f);
+					haichexinxi.setBujiaojine(penalty);
+					haichexinxi.setHaichebeizhu(haichexinxi.getHaichebeizhu() + " (系统: 超期" + diffDays + "天，补缴" + penalty + "元)");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
+			// 3. 将订单状态标记为已完成 (如果数据库加了status字段)
+			// order.setStatus("已完成");
+			// zuchedingdanService.updateById(order);
+		}
 
-
+		// 4. 释放车辆库存
+		QichexinxiEntity car = qichexinxiService.selectOne(
+				new EntityWrapper<QichexinxiEntity>().eq("chepaihao", haichexinxi.getChepaihao())
+		);
+		if(car != null) {
+			car.setZhuangtai("未出租");
+			qichexinxiService.updateById(car);
+		}
+	}
 }
